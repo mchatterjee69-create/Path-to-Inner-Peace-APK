@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Path to Inner Peace</string>
+    <string name="tagline">Premium Mental Reset &amp; 5-Day Challenge</string>
+    <string name="coach_name">Mainak Chatterjee</string>
+    <string name="coach_title">Author, Mental Health Coach &amp; Quantum Alchemist</string>
+    <string name="challenge_title">5-Day Mind Reset Challenge</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_challenge">5-Day Challenge</string>
+    <string name="nav_pillars">10 Pillars</string>
+    <string name="nav_sessions">Sessions</string>
+    <string name="nav_journal">Journal</string>
+</resources>
