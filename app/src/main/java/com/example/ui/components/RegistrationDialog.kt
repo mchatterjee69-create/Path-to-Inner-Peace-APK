@@ -1,6 +1,5 @@
 package com.example.ui.components
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,14 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
@@ -29,8 +28,6 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -45,366 +42,257 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.example.ui.theme.BorderEmeraldLight
-import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandGold
-import com.example.ui.theme.EmeraldCard
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.TextWhite
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
 
 @Composable
 fun RegistrationDialog(
-    initialBatch: String,
-    onRegister: (fullName: String, email: String, whatsapp: String, country: String, batch: String) -> Unit,
-    onClose: () -> Unit
+    initialBatch: String = "6:30 AM",
+    onClose: () -> Unit,
+    onRegister: (fullName: String, email: String, whatsapp: String, country: String, batch: String) -> Unit
 ) {
-    val context = LocalContext.current
     var fullName by remember { mutableStateOf("") }
-    var whatsappNumber by remember { mutableStateOf("") }
-    var emailAddress by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("India") }
-    var selectedBatch by remember { mutableStateOf(initialBatch) }
-    var agreementChecked by remember { mutableStateOf(true) }
+    var email by remember { mutableStateOf("") }
+    var whatsapp by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("India (+91)") }
+    var selectedBatch by remember {
+        mutableStateOf(if (initialBatch.contains("8:30")) "8:30 PM" else "6:30 AM")
+    }
 
-    val morningSlots = listOf("6:30 AM", "7:30 AM", "8:30 AM")
-    val eveningSlots = listOf("5:00 PM", "6:00 PM", "7:00 PM")
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isSubmitted by remember { mutableStateOf(false) }
 
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onClose) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .padding(vertical = 20.dp),
             shape = RoundedCornerShape(24.dp),
-            color = EmeraldDeep,
-            border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.5f))
+            color = EmeraldDark,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp)
+                    .padding(22.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top Header Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(BrandGold.copy(alpha = 0.2f))
-                                .border(1.dp, BrandGold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = "100% FREE CHALLENGE",
-                                color = BrandGold,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "5-Day Mind Reset Registration",
-                            color = TextWhite,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
+                // Header with close
+                Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = onClose,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(EmeraldDark, CircleShape)
-                            .testTag("button_close_registration")
+                        modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TextWhite,
-                            modifier = Modifier.size(18.dp)
+                            tint = Color.White
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 36.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(BrandGold.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                .border(1.dp, BrandGold, RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "FREE 5-DAY CHALLENGE",
+                                color = BrandGold,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "Secure Your Spot",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Join 10,000+ professionals resetting their minds with Mainak Chatterjee.",
+                            color = Color(0xFFA7F3D0),
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
                         )
                     }
                 }
 
-                Text(
-                    text = "Reserve your spot in the next batch. Instant access to Day 1 Mental Detox, guided audio tracks & Welcome Kit.",
-                    color = Color(0xFFA7F3D0),
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Batch Time Selection
+                // Batch Selector Pill
                 Text(
-                    text = "SELECT YOUR DAILY 30-MIN BATCH (IST)",
-                    color = BrandGold,
+                    text = "SELECT LIVE SESSION TIMING:",
+                    color = Color.White.copy(alpha = 0.8f),
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.Start)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
 
-                // Morning Slots
-                Text(
-                    text = "🌤️ Morning Batches",
-                    color = TextWhite,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
                 Spacer(modifier = Modifier.height(6.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    morningSlots.forEach { slot ->
-                        val isSelected = selectedBatch == slot
+                    val batches = listOf("6:30 AM", "8:30 PM")
+                    batches.forEach { batch ->
+                        val isSelected = selectedBatch == batch
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (isSelected) BrandGold else EmeraldDark
-                                )
+                                .background(if (isSelected) EmeraldPrimary else EmeraldMedium)
                                 .border(
-                                    1.dp,
-                                    if (isSelected) BrandGold else BorderEmeraldLight,
-                                    RoundedCornerShape(10.dp)
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) BrandGold else Color.White.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(10.dp)
                                 )
-                                .clickable { selectedBatch = slot }
-                                .padding(vertical = 10.dp),
+                                .clickable { selectedBatch = batch }
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = slot,
-                                color = if (isSelected) EmeraldDeep else TextWhite,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = if (isSelected) BrandGold else Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "$batch IST",
+                                    color = Color.White,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Evening Slots
-                Text(
-                    text = "🌙 Evening Batches",
-                    color = TextWhite,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    eveningSlots.forEach { slot ->
-                        val isSelected = selectedBatch == slot
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    if (isSelected) BrandGold else EmeraldDark
-                                )
-                                .border(
-                                    1.dp,
-                                    if (isSelected) BrandGold else BorderEmeraldLight,
-                                    RoundedCornerShape(10.dp)
-                                )
-                                .clickable { selectedBatch = slot }
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = slot,
-                                color = if (isSelected) EmeraldDeep else TextWhite,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // Input Fields
+                // Form fields
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("Full Name *", color = Color(0xFFA7F3D0)) },
-                    placeholder = { Text("e.g. Mainak Chatterjee", color = Color.Gray) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = BrandGold)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("input_reg_fullname"),
-                    shape = RoundedCornerShape(12.dp),
+                    label = { Text("Full Name", color = Color(0xFFA7F3D0)) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = BrandGold) },
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = TextWhite,
-                        unfocusedTextColor = TextWhite,
-                        focusedBorderColor = BrandGold,
-                        unfocusedBorderColor = BorderEmeraldLight,
-                        focusedContainerColor = EmeraldDark,
-                        unfocusedContainerColor = EmeraldDark
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = EmeraldPrimary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.25f)
                     ),
-                    singleLine = true
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = whatsappNumber,
-                    onValueChange = { whatsappNumber = it },
-                    label = { Text("WhatsApp Number *", color = Color(0xFFA7F3D0)) },
-                    placeholder = { Text("+91 91636 70300", color = Color.Gray) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Phone, contentDescription = null, tint = BrandGold)
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("input_reg_whatsapp"),
-                    shape = RoundedCornerShape(12.dp),
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email Address", color = Color(0xFFA7F3D0)) },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = BrandGold) },
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = TextWhite,
-                        unfocusedTextColor = TextWhite,
-                        focusedBorderColor = BrandGold,
-                        unfocusedBorderColor = BorderEmeraldLight,
-                        focusedContainerColor = EmeraldDark,
-                        unfocusedContainerColor = EmeraldDark
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = EmeraldPrimary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.25f)
                     ),
-                    singleLine = true
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = emailAddress,
-                    onValueChange = { emailAddress = it },
-                    label = { Text("Email Address (Optional)", color = Color(0xFFA7F3D0)) },
-                    placeholder = { Text("seeker@pathtoinnerpeace.in", color = Color.Gray) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Email, contentDescription = null, tint = BrandGold)
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("input_reg_email"),
-                    shape = RoundedCornerShape(12.dp),
+                    value = whatsapp,
+                    onValueChange = { whatsapp = it },
+                    label = { Text("WhatsApp Number (for Zoom & Kit link)", color = Color(0xFFA7F3D0)) },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = BrandGold) },
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = TextWhite,
-                        unfocusedTextColor = TextWhite,
-                        focusedBorderColor = BrandGold,
-                        unfocusedBorderColor = BorderEmeraldLight,
-                        focusedContainerColor = EmeraldDark,
-                        unfocusedContainerColor = EmeraldDark
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = EmeraldPrimary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.25f)
                     ),
-                    singleLine = true
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = country,
                     onValueChange = { country = it },
-                    label = { Text("Country", color = Color(0xFFA7F3D0)) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Public, contentDescription = null, tint = BrandGold)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    label = { Text("Country / Region", color = Color(0xFFA7F3D0)) },
+                    leadingIcon = { Icon(Icons.Default.Public, contentDescription = null, tint = BrandGold) },
+                    singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = TextWhite,
-                        unfocusedTextColor = TextWhite,
-                        focusedBorderColor = BrandGold,
-                        unfocusedBorderColor = BorderEmeraldLight,
-                        focusedContainerColor = EmeraldDark,
-                        unfocusedContainerColor = EmeraldDark
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = EmeraldPrimary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.25f)
                     ),
-                    singleLine = true
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Agreement Checkbox
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(EmeraldDark.copy(alpha = 0.6f))
-                        .clickable { agreementChecked = !agreementChecked }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = agreementChecked,
-                        onCheckedChange = { agreementChecked = it },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = BrandGold,
-                            checkmarkColor = EmeraldDeep,
-                            uncheckedColor = Color(0xFFA7F3D0)
-                        )
-                    )
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "I agree to receive daily WhatsApp notifications, lesson updates, and my certificate alert.",
-                        color = Color(0xFFD1FAE5),
+                        text = errorMessage ?: "",
+                        color = Color(0xFFF87171),
                         fontSize = 11.sp,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.weight(1f)
+                        textAlign = TextAlign.Center
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                // Submit Button
                 Button(
                     onClick = {
                         if (fullName.isBlank()) {
-                            Toast.makeText(context, "Please enter your Full Name", Toast.LENGTH_SHORT).show()
-                            return@Button
+                            errorMessage = "Please enter your full name."
+                        } else if (email.isBlank() || !email.contains("@")) {
+                            errorMessage = "Please enter a valid email address."
+                        } else if (whatsapp.isBlank() || whatsapp.length < 8) {
+                            errorMessage = "Please enter a valid WhatsApp number."
+                        } else {
+                            errorMessage = null
+                            isSubmitted = true
+                            onRegister(fullName, email, whatsapp, country, selectedBatch)
                         }
-                        if (whatsappNumber.isBlank()) {
-                            Toast.makeText(context, "Please enter your WhatsApp Number", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        Toast.makeText(context, "Registration Successful! Welcome to the Challenge.", Toast.LENGTH_LONG).show()
-                        onRegister(fullName, emailAddress, whatsappNumber, country, selectedBatch)
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag("button_complete_registration"),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGold,
-                        contentColor = EmeraldDeep
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Complete Free Registration →",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Claim Free Seat & Access Day 1",
+                        color = EmeraldDark,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
                     )
                 }
 

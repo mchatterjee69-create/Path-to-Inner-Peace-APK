@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,19 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -37,201 +33,149 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.model.JournalEntryEntity
-import com.example.data.model.StopTechniqueStep
-import com.example.ui.theme.BorderEmeraldLight
-import com.example.ui.theme.BorderLight
-import com.example.ui.theme.BrandEmerald
+import com.example.data.model.JournalEntry
+import com.example.data.model.StopStep
+import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.BrandGold
-import com.example.ui.theme.CardCream
-import com.example.ui.theme.CardWhite
+import com.example.ui.theme.BrandGoldDark
+import com.example.ui.theme.CardSurface
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.MintSoft
-import com.example.ui.theme.MintText
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
+import com.example.ui.theme.EmeraldSoftBg
 import com.example.ui.theme.PageBackground
-import com.example.ui.theme.TextEmerald900
-import com.example.ui.theme.TextEmerald950
-import com.example.ui.theme.TextSlate
-import com.example.ui.theme.TextWhite
-import kotlin.math.roundToInt
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextLight
+import com.example.ui.theme.TextMuted
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun GuideScreen(
-    stopSteps: List<StopTechniqueStep>,
-    journalEntries: List<JournalEntryEntity>,
-    onSaveJournal: (String, Int, Int, String, String, String) -> Unit,
-    onOpenBreathing: () -> Unit,
-    modifier: Modifier = Modifier
+    stopSteps: List<StopStep>,
+    journalEntries: List<JournalEntry>,
+    onSaveJournal: (mood: String, stressBefore: Int, stressAfter: Int, reflection: String, gratitude: String, burden: String) -> Unit,
+    onOpenBreathing: () -> Unit
 ) {
-    var activeStopStep by remember { mutableIntStateOf(0) }
-    var selectedMood by remember { mutableStateOf("Peaceful") }
-    var stressBefore by remember { mutableFloatStateOf(6f) }
-    var stressAfter by remember { mutableFloatStateOf(2f) }
-    var reflectionText by remember { mutableStateOf("") }
-    var gratitudeText by remember { mutableStateOf("") }
-    var releasedBurdenText by remember { mutableStateOf("") }
+    var selectedMood by remember { mutableStateOf("Overwhelmed") }
+    var stressBefore by remember { mutableFloatStateOf(7f) }
+    var stressAfter by remember { mutableFloatStateOf(4f) }
+    var reflection by remember { mutableStateOf("") }
+    var gratitude by remember { mutableStateOf("") }
+    var burden by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
 
-    val moods = listOf("Peaceful", "Grounded", "Anxious", "Fatigued", "Empowered", "Reflective")
-
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .background(PageBackground),
-        contentPadding = PaddingValues(bottom = 96.dp)
+            .background(PageBackground)
+            .padding(16.dp)
+            .testTag("guide_screen")
     ) {
         // Header
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(EmeraldDeep)
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "INNER PEACE GUIDE & CBT TOOLS",
-                        color = BrandGold,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = "5 Techniques & Somatic Check-in",
-                        color = TextWhite,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "TOOLKIT & THE S.T.O.P. TECHNIQUE",
+                    color = BrandGoldDark,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Text(
+                    text = "Clinical Somatic Grounding",
+                    color = TextDark,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "The core mental emergency protocol of Path to Inner Peace. Use this anytime anxiety, rumination, or emotional agitation overwhelms you.",
+                    color = TextMuted,
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp
+                )
             }
         }
 
-        // 1. S-T-O-P Technique Interactive Tool
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // STOP Interactive Cards
         item {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = EmeraldDark)
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = EmeraldDark),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "EMERGENCY GROUNDING PROTOCOL",
-                            color = BrandGold,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(MintSoft)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "90-SEC RESET",
-                                color = MintText,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "The S-T-O-P Technique",
-                        color = TextWhite,
-                        fontSize = 18.sp,
+                        text = "THE 4-STEP S.T.O.P. PROTOCOL",
+                        color = BrandGold,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(
-                        text = "A 4-step metacognitive tool to intercept fight-or-flight reactions instantly.",
-                        color = Color(0xFFA7F3D0),
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
-                    )
-
-                    // Step Pills S - T - O - P
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        stopSteps.forEachIndexed { index, step ->
-                            val isCurrent = index == activeStopStep
+                    stopSteps.forEach { step ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
                             Box(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isCurrent) BrandGold else EmeraldDeep)
-                                    .clickable { activeStopStep = index }
-                                    .padding(vertical = 10.dp),
+                                    .size(34.dp)
+                                    .background(BrandGold, RoundedCornerShape(8.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = step.letter,
-                                    color = if (isCurrent) EmeraldDeep else BrandGold,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
+                                    color = EmeraldDark,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.ExtraBold
                                 )
                             }
-                        }
-                    }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
-                    val cur = stopSteps.getOrNull(activeStopStep)
-                    if (cur != null) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(EmeraldDeep)
-                                .border(1.dp, BorderEmeraldLight, RoundedCornerShape(12.dp))
-                                .padding(14.dp)
-                        ) {
                             Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = step.title,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "• ${step.durationText}",
+                                        color = Color(0xFFA7F3D0),
+                                        fontSize = 10.sp
+                                    )
+                                }
                                 Text(
-                                    text = "${cur.letter} — ${cur.title}",
-                                    color = BrandGold,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = cur.guidance,
-                                    color = TextWhite,
-                                    fontSize = 12.sp,
-                                    lineHeight = 17.sp
+                                    text = step.instruction,
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
                                 )
                             }
                         }
@@ -241,178 +185,123 @@ fun GuideScreen(
 
                     Button(
                         onClick = onOpenBreathing,
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandGold,
-                            contentColor = EmeraldDeep
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Air,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = "Launch 4-4-4-4 Box Breathing Tool",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Icon(Icons.Default.Air, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Practice Breathing Reset Now", color = Color.White, fontSize = 12.sp)
                     }
                 }
             }
         }
 
-        // 2. Cognitive Behavioral Therapy (CBT) Thought Record Form
+        item { Spacer(modifier = Modifier.height(20.dp)) }
+
+        // Daily Stress & MindReset Journal Form
         item {
             Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
-                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp)
-                ) {
-                    Text(
-                        text = "SOMATIC & EMOTIONAL CHECK-IN",
-                        color = BrandEmerald,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = "Daily Stress Reduction & Reflection",
-                        color = TextEmerald950,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
-                    )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.EditNote, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Daily Mind Reset Journal Ledger",
+                            color = TextDark,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
 
-                    // Mood selector
-                    Text(
-                        text = "Current State of Mind:",
-                        color = TextSlate,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Text("CURRENT MENTAL STATE / MOOD:", color = TextMuted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    val moods = listOf("Overwhelmed", "Anxious", "Neutral", "Centered", "Grateful")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        items(moods) { mood ->
-                            val isSel = mood == selectedMood
+                        moods.forEach { mood ->
+                            val isSelected = selectedMood == mood
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(if (isSel) BrandEmerald else CardCream)
-                                    .border(
-                                        1.dp,
-                                        if (isSel) BrandGold else BorderLight,
-                                        RoundedCornerShape(20.dp)
-                                    )
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) EmeraldDark else EmeraldSoftBg)
                                     .clickable { selectedMood = mood }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = mood,
-                                    color = if (isSel) CardWhite else TextEmerald950,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                                    color = if (isSelected) BrandGold else EmeraldDark,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    // Stress Sliders
-                    Text(
-                        text = "Stress Level Before Practice: ${stressBefore.roundToInt()} / 10",
-                        color = TextEmerald950,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("STRESS LEVEL BEFORE RESET: ${stressBefore.toInt()}/10", color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Slider(
                         value = stressBefore,
                         onValueChange = { stressBefore = it },
                         valueRange = 1f..10f,
                         steps = 8,
                         colors = SliderDefaults.colors(
-                            thumbColor = BrandEmerald,
-                            activeTrackColor = BrandEmerald
+                            thumbColor = BrandGold,
+                            activeTrackColor = BrandGoldDark
                         )
                     )
 
-                    Text(
-                        text = "Stress Level After Practice: ${stressAfter.roundToInt()} / 10",
-                        color = TextEmerald950,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("STRESS LEVEL AFTER RESET: ${stressAfter.toInt()}/10", color = TextMuted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Slider(
                         value = stressAfter,
                         onValueChange = { stressAfter = it },
                         valueRange = 1f..10f,
                         steps = 8,
                         colors = SliderDefaults.colors(
-                            thumbColor = BrandGold,
-                            activeTrackColor = BrandGold
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Text fields
-                    OutlinedTextField(
-                        value = reflectionText,
-                        onValueChange = { reflectionText = it },
-                        label = { Text("What did you observe in your mind today?", fontSize = 12.sp) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BrandEmerald,
-                            unfocusedBorderColor = BorderLight
+                            thumbColor = EmeraldPrimary,
+                            activeTrackColor = EmeraldPrimary
                         )
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
-                        value = gratitudeText,
-                        onValueChange = { gratitudeText = it },
-                        label = { Text("3 things you are grateful for right now:", fontSize = 12.sp) },
+                        value = burden,
+                        onValueChange = { burden = it },
+                        label = { Text("What worry or emotional burden are you letting go of?", fontSize = 11.sp) },
+                        minLines = 2,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BrandEmerald,
-                            unfocusedBorderColor = BorderLight
+                            focusedBorderColor = EmeraldPrimary,
+                            unfocusedBorderColor = BorderSubtle
                         )
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
-                        value = releasedBurdenText,
-                        onValueChange = { releasedBurdenText = it },
-                        label = { Text("What burden or grudge are you letting go of?", fontSize = 12.sp) },
+                        value = gratitude,
+                        onValueChange = { gratitude = it },
+                        label = { Text("3 micro-blessings you are genuinely grateful for today", fontSize = 11.sp) },
+                        minLines = 2,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = BrandEmerald,
-                            unfocusedBorderColor = BorderLight
+                            focusedBorderColor = EmeraldPrimary,
+                            unfocusedBorderColor = BorderSubtle
                         )
                     )
 
@@ -422,128 +311,121 @@ fun GuideScreen(
                         onClick = {
                             onSaveJournal(
                                 selectedMood,
-                                stressBefore.roundToInt(),
-                                stressAfter.roundToInt(),
-                                reflectionText,
-                                gratitudeText,
-                                releasedBurdenText
+                                stressBefore.toInt(),
+                                stressAfter.toInt(),
+                                reflection,
+                                gratitude,
+                                burden
                             )
                             isSubmitted = true
-                            reflectionText = ""
-                            gratitudeText = ""
-                            releasedBurdenText = ""
+                            burden = ""
+                            gratitude = ""
                         },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldDark),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandEmerald,
-                            contentColor = CardWhite
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isSubmitted) Icons.Default.Check else Icons.Default.Save,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = if (isSubmitted) "Saved to Offline Journal" else "Save Journal Entry",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Icon(Icons.Default.Save, contentDescription = null, tint = BrandGold, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Save Entry to Local Journal", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+
+                    if (isSubmitted) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "✓ Journal entry securely saved to offline database!",
+                            color = EmeraldPrimary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
         }
 
-        // 3. Saved Journal History
+        item { Spacer(modifier = Modifier.height(20.dp)) }
+
+        // Past Saved Journal Entries
         item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = null,
-                        tint = BrandEmerald,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "Saved Offline Journal Entries",
-                        color = TextEmerald950,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.History, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "SAVED ENTRIES HISTORY (${journalEntries.size})",
+                    color = TextDark,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
-        items(journalEntries) { entry ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
-                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
-            ) {
-                Column(
+        item { Spacer(modifier = Modifier.height(8.dp)) }
+
+        if (journalEntries.isEmpty()) {
+            item {
+                Text(
+                    text = "No saved entries yet. Log your first stress reduction audit above!",
+                    color = TextLight,
+                    fontSize = 11.sp
+                )
+            }
+        } else {
+            items(journalEntries) { entry ->
+                val dateStr = SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(Date(entry.timestamp))
+                Card(
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = CardSurface),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp)
+                        .padding(vertical = 4.dp)
+                        .border(1.dp, BorderSubtle, RoundedCornerShape(10.dp))
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(dateStr, color = TextMuted, fontSize = 10.sp)
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = EmeraldSoftBg
+                            ) {
+                                Text(
+                                    text = entry.mood,
+                                    color = EmeraldDark,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = entry.dateString,
-                            color = BrandEmerald,
+                            text = "Stress Shift: ${entry.stressBefore}/10 → ${entry.stressAfter}/10",
+                            color = BrandGoldDark,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = "Stress: ${entry.stressBefore} → ${entry.stressAfter} / 10",
-                            color = BrandGold,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
 
-                    if (entry.reflection.isNotBlank()) {
-                        Text(
-                            text = entry.reflection,
-                            color = TextEmerald950,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
+                        if (entry.emotionalBurden.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Released: \"${entry.emotionalBurden}\"",
+                                color = TextDark,
+                                fontSize = 11.sp
+                            )
+                        }
 
-                    if (entry.gratitude.isNotBlank()) {
-                        Text(
-                            text = "Grateful for: ${entry.gratitude}",
-                            color = TextSlate,
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-
-                    if (entry.releasedBurden.isNotBlank()) {
-                        Text(
-                            text = "Released: ${entry.releasedBurden}",
-                            color = Color(0xFFEF4444),
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
+                        if (entry.gratitude.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Gratitude: \"${entry.gratitude}\"",
+                                color = EmeraldDark,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
             }

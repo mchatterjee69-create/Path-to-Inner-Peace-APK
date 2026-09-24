@@ -68,11 +68,11 @@ fun InnerPeaceApp(viewModel: InnerPeaceViewModel) {
     val breathingCount by viewModel.breathingCount.collectAsStateWithLifecycle()
 
     val showRegistration by viewModel.showRegistrationModal.collectAsStateWithLifecycle()
-    val registrationBatch by viewModel.registrationBatch.collectAsStateWithLifecycle()
+    val selectedBatchTime by viewModel.selectedBatchTime.collectAsStateWithLifecycle()
     val showWelcomeKit by viewModel.showWelcomeKitModal.collectAsStateWithLifecycle()
     val showCareerBooking by viewModel.showCareerBookingModal.collectAsStateWithLifecycle()
     val careerBookingType by viewModel.careerBookingType.collectAsStateWithLifecycle()
-    val selectedPaymentPlan by viewModel.selectedPaymentPlan.collectAsStateWithLifecycle()
+    val selectedPlanForPayment by viewModel.selectedPlanForPayment.collectAsStateWithLifecycle()
 
     val activeAmbientSound by viewModel.activeAmbientSound.collectAsStateWithLifecycle()
     val isAmbientPlaying by viewModel.isAmbientSoundPlaying.collectAsStateWithLifecycle()
@@ -173,10 +173,10 @@ fun InnerPeaceApp(viewModel: InnerPeaceViewModel) {
             // 1. Registration Dialog (Matching www.pathtoinnerpeace.in registration)
             if (showRegistration) {
                 RegistrationDialog(
-                    initialBatch = registrationBatch,
+                    initialBatch = selectedBatchTime,
                     onClose = { viewModel.closeRegistration() },
-                    onRegister = { name, email, phone, batch ->
-                        viewModel.registerUser(name, email, phone, batch)
+                    onRegister = { name, email, phone, country, batch ->
+                        viewModel.registerUser(name, email, phone, country, batch)
                     }
                 )
             }
@@ -202,7 +202,7 @@ fun InnerPeaceApp(viewModel: InnerPeaceViewModel) {
             }
 
             // 4. Razorpay Payment Modal for Membership Plans
-            selectedPaymentPlan?.let { plan ->
+            selectedPlanForPayment?.let { plan ->
                 PaymentPlanDialog(
                     plan = plan,
                     onClose = { viewModel.closePaymentPlan() }

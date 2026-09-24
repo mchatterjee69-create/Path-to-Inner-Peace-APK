@@ -2,18 +2,15 @@ package com.example.ui.screens
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,890 +20,500 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.R
 import com.example.data.model.FaqItem
-import com.example.data.model.TestimonialItem
-import com.example.data.model.UserProgressEntity
-import com.example.ui.theme.BorderEmeraldLight
-import com.example.ui.theme.BorderLight
-import com.example.ui.theme.BrandEmerald
+import com.example.data.model.Testimonial
+import com.example.data.model.UserProgress
+import com.example.ui.theme.BorderSubtle
 import com.example.ui.theme.BrandGold
 import com.example.ui.theme.BrandGoldDark
-import com.example.ui.theme.CardCream
-import com.example.ui.theme.CardWhite
-import com.example.ui.theme.EmeraldCard
+import com.example.ui.theme.CardSurface
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.MintSoft
-import com.example.ui.theme.MintText
+import com.example.ui.theme.EmeraldLight
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
+import com.example.ui.theme.EmeraldSoftBg
 import com.example.ui.theme.PageBackground
-import com.example.ui.theme.TextEmerald900
-import com.example.ui.theme.TextEmerald950
-import com.example.ui.theme.TextGold
-import com.example.ui.theme.TextSlate
-import com.example.ui.theme.TextSlateMuted
-import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TextDark
+import com.example.ui.theme.TextLight
+import com.example.ui.theme.TextMuted
 import com.example.ui.viewmodel.AppTab
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    progress: UserProgressEntity?,
-    testimonials: List<TestimonialItem>,
+    progress: UserProgress?,
+    testimonials: List<Testimonial>,
     faqs: List<FaqItem>,
     onNavigateTab: (AppTab) -> Unit,
     onOpenBreathing: () -> Unit,
     onOpenCoach: () -> Unit,
-    onOpenRegistration: (batch: String?) -> Unit,
+    onOpenRegistration: (String?) -> Unit,
     onOpenWelcomeKit: () -> Unit,
     onOpenCertificate: () -> Unit,
-    onSelectDay: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onSelectDay: (Int) -> Unit
 ) {
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val isRegistered = progress?.isRegistered == true
+    val context = LocalContext.current
+    var selectedBatch by remember { mutableStateOf("6:30 AM") }
 
     LazyColumn(
-        state = listState,
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .background(PageBackground),
-        contentPadding = PaddingValues(bottom = 96.dp)
+            .background(PageBackground)
+            .testTag("home_screen")
     ) {
-        // 1. Top Header Bar matching www.pathtoinnerpeace.in
-        item {
-            HeaderBar(
-                onOpenBreathing = onOpenBreathing,
-                onOpenCoach = onOpenCoach
-            )
-        }
-
-        // 2. Hero Section
+        // 1. HERO SECTION (Identical copy of www.pathtoinnerpeace.in top fold)
         item {
             HeroSection(
-                isRegistered = isRegistered,
-                onStartChallenge = {
-                    onSelectDay(1)
-                    onNavigateTab(AppTab.DASHBOARD)
-                },
-                onOpenRegistration = onOpenRegistration,
-                onOpenWelcomeKit = onOpenWelcomeKit,
-                onOpenCareerAxis = {
-                    onNavigateTab(AppTab.CAREER_AXIS)
-                },
-                onScrollToCurriculum = {
-                    scope.launch {
-                        // Scroll to Challenge Breakdown (item index 6)
-                        listState.animateScrollToItem(6)
-                    }
-                }
+                selectedBatch = selectedBatch,
+                onBatchChange = { selectedBatch = it },
+                onClaimSeat = { onOpenRegistration(selectedBatch) },
+                onWatchIntro = onOpenBreathing
             )
         }
 
-        // 3. Trust Highlights (4 Badges)
+        // 2. SOCIAL PROOF & STATS BAR
         item {
-            TrustHighlightsSection()
+            SocialProofBar()
         }
 
-        // 4. Social Proof & Statistics
+        // 3. FREE WELCOME KIT HIGHLIGHT CARD
         item {
-            StatisticsSection()
-        }
-
-        // 5. Free Welcome Kit Highlight Section (Matching www.pathtoinnerpeace.in)
-        item {
-            WelcomeKitHighlightSection(
+            WelcomeKitHighlightBanner(
                 onOpenWelcomeKit = onOpenWelcomeKit
             )
         }
 
-        // 6. How It Works (4 Steps)
+        // 4. 5-DAY CURRICULUM SYLLABUS OVERVIEW
         item {
-            HowItWorksSection(
-                onRegisterClick = { onOpenRegistration(null) },
-                onCertificateClick = onOpenCertificate
-            )
-        }
-
-        // 7. The 5-Day Mind Reset Breakdown
-        item {
-            ChallengeBreakdownSection(
-                isRegistered = isRegistered,
+            CurriculumOverview(
                 onSelectDay = { day ->
                     onSelectDay(day)
                     onNavigateTab(AppTab.DASHBOARD)
                 },
-                onOpenRegistration = { onOpenRegistration(null) }
+                onOpenRegistration = { onOpenRegistration(selectedBatch) }
             )
         }
 
-        // 8. Comprehensive Benefits
+        // 5. ABOUT THE MENTOR - MAINAK CHATTERJEE
         item {
-            BenefitsSection()
+            MentorSection(
+                onContactCoach = onOpenCoach
+            )
         }
 
-        // 9. Testimonials Section
+        // 6. TESTIMONIALS & COMMUNITY WINS
         item {
             TestimonialsSection(testimonials = testimonials)
         }
 
-        // 10. Frequently Asked Questions
+        // 7. FREQUENTLY ASKED QUESTIONS
         item {
             FaqSection(faqs = faqs)
         }
 
-        // 11. Bottom CTA Banner (Matching website's bottom CTA)
+        // 8. BOTTOM PERSISTENT REGISTRATION CTA
         item {
-            BottomCtaBannerSection(
-                isRegistered = isRegistered,
-                onAction = {
-                    if (isRegistered) {
-                        onSelectDay(1)
-                        onNavigateTab(AppTab.DASHBOARD)
-                    } else {
-                        onOpenRegistration(null)
-                    }
-                }
+            BottomCtaBanner(
+                onRegister = { onOpenRegistration(selectedBatch) },
+                onOpenWelcomeKit = onOpenWelcomeKit
             )
-        }
-    }
-}
-
-@Composable
-private fun HeaderBar(
-    onOpenBreathing: () -> Unit,
-    onOpenCoach: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(EmeraldDeep)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Official circular logo with gold border
-                Image(
-                    painter = painterResource(id = R.drawable.inner_peace_logo),
-                    contentDescription = "Path to Inner Peace Logo",
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .border(1.5.dp, BrandGold, CircleShape)
-                )
-
-                Column {
-                    Text(
-                        text = "Path to Inner Peace",
-                        color = TextWhite,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.3.sp
-                    )
-                    Text(
-                        text = "MindForge 360°™",
-                        color = BrandGold,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Quick Calm Breathing Trigger
-                IconButton(
-                    onClick = onOpenBreathing,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(EmeraldDark, CircleShape)
-                        .border(1.dp, BorderEmeraldLight, CircleShape)
-                        .testTag("button_quick_breathing")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Air,
-                        contentDescription = "Breathing Tool",
-                        tint = BrandGold,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                // Coach Contact Trigger
-                IconButton(
-                    onClick = onOpenCoach,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(EmeraldDark, CircleShape)
-                        .border(1.dp, BorderEmeraldLight, CircleShape)
-                        .testTag("button_coach_contact")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SupportAgent,
-                        contentDescription = "Coach Support",
-                        tint = TextWhite,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
         }
     }
 }
 
 @Composable
 private fun HeroSection(
-    isRegistered: Boolean,
-    onStartChallenge: () -> Unit,
-    onOpenRegistration: (String) -> Unit,
-    onOpenWelcomeKit: () -> Unit,
-    onOpenCareerAxis: () -> Unit,
-    onScrollToCurriculum: () -> Unit
+    selectedBatch: String,
+    onBatchChange: (String) -> Unit,
+    onClaimSeat: () -> Unit,
+    onWatchIntro: () -> Unit
 ) {
-    val context = LocalContext.current
-    var selectedBatch by remember { mutableStateOf("6:30 AM") }
-    val morningBatches = listOf("6:30 AM", "7:30 AM", "8:30 AM")
-    val eveningBatches = listOf("5:00 PM", "6:00 PM", "7:00 PM")
-    val liveVideoUrl = "https://www.youtube.com/live/u42RK5eV_c8?si=wg7ziJNLQNRu7hID"
-
-    fun openYouTubeLive() {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(liveVideoUrl))
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "Opening YouTube Live...", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = EmeraldDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Visual Image Banner with Play Overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clickable { openYouTubeLive() }
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.hero_thumb),
-                    contentDescription = "Serene Mind - 5 Day Mind Reset Challenge",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        EmeraldDark,
+                        EmeraldMedium,
+                        Color(0xFF063F33)
+                    )
                 )
-
-                // Dark gradient overlay
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, EmeraldDark.copy(alpha = 0.95f)),
-                                startY = 80f
-                            )
-                        )
-                )
-
-                // Badge top left
-                Box(
-                    modifier = Modifier
-                        .padding(14.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(EmeraldDeep.copy(alpha = 0.85f))
-                        .border(1.dp, BrandGold.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "5-DAY MIND RESET CHALLENGE",
-                        color = BrandGold,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-
-                // Play icon center
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(BrandGold)
-                        .clickable { openYouTubeLive() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play Masterclass Video",
-                        tint = EmeraldDeep,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-
-            // Headline & Text
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Rewire Your Mind in ",
-                        color = TextWhite,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Just 5 Days",
-                        color = BrandGold,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Normal,
-                        fontStyle = FontStyle.Italic,
-                        fontFamily = FontFamily.Serif
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "A science-backed, 30-minute daily journey to silence negative chatter, reset your nervous system, and reclaim inner peace.",
-                    color = Color(0xFFD1FAE5),
-                    fontSize = 13.sp,
-                    lineHeight = 19.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Batch Time Slot Selector (Matching www.pathtoinnerpeace.in)
-                Text(
-                    text = "SELECT YOUR 30-MIN DAILY BATCH (IST):",
-                    color = BrandGold,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Morning Slots
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    morningBatches.forEach { slot ->
-                        val isSelected = selectedBatch == slot
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) BrandGold else EmeraldDeep)
-                                .border(1.dp, if (isSelected) BrandGold else BorderEmeraldLight, RoundedCornerShape(8.dp))
-                                .clickable { selectedBatch = slot }
-                                .padding(vertical = 6.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🌤 $slot",
-                                color = if (isSelected) EmeraldDeep else TextWhite,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Evening Slots
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    eveningBatches.forEach { slot ->
-                        val isSelected = selectedBatch == slot
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) BrandGold else EmeraldDeep)
-                                .border(1.dp, if (isSelected) BrandGold else BorderEmeraldLight, RoundedCornerShape(8.dp))
-                                .clickable { selectedBatch = slot }
-                                .padding(vertical = 6.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🌙 $slot",
-                                color = if (isSelected) EmeraldDeep else TextWhite,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                // CTA Primary Button
-                Button(
-                    onClick = {
-                        if (isRegistered) {
-                            onStartChallenge()
-                        } else {
-                            onOpenRegistration(selectedBatch)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .testTag("btn_join_challenge"),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGold,
-                        contentColor = EmeraldDeep
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = if (isRegistered) "Go to My Dashboard (Day 1) →" else "Click to Join Free Challenge",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Secondary Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onScrollToCurriculum,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(brush = Brush.horizontalGradient(listOf(BrandGold, BrandEmerald))),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandGold)
-                    ) {
-                        Text(
-                            text = "Curriculum Breakdown",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = onOpenCareerAxis,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(brush = Brush.horizontalGradient(listOf(BrandEmerald, BorderEmeraldLight))),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFA7F3D0))
-                    ) {
-                        Text(
-                            text = "Career Axis Calm",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Hero Right Card (Matching website's right card)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = EmeraldDeep),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.4f))
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Reserve Your Free Spot",
-                                color = BrandGold,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(BrandGold)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = "100% FREE",
-                                    color = EmeraldDeep,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        DetailRow("Coach:", "Mainak Chatterjee (MindForge 360°™)")
-                        DetailRowClickable("Platform:", "Youtube Live (Daily 30-min guided resets)") {
-                            openYouTubeLive()
-                        }
-                        DetailRow("Format:", "Daily 30-Min Guided Reset")
-                        DetailRowClickable("Includes:", "Exclusive pack of free Welcome Kit ↗") {
-                            onOpenWelcomeKit()
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Button(
-                            onClick = { onOpenRegistration(selectedBatch) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(44.dp)
-                                .testTag("btn_join_now_hero_card"),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = BrandGold,
-                                contentColor = EmeraldDeep
-                            )
-                        ) {
-                            Text(
-                                text = "Join Now →",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, color = Color(0xFFA7F3D0), fontSize = 11.sp)
-        Text(text = value, color = TextWhite, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-private fun DetailRowClickable(label: String, value: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 3.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, color = Color(0xFFA7F3D0), fontSize = 11.sp)
-        Text(text = value, color = BrandGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun TrustHighlightsSection() {
-    val items = listOf(
-        "30-Min Sessions",
-        "Zero Prior Experience",
-        "Actionable & Practical",
-        "Lasting Resilience"
-    )
-
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        items(items) { item ->
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(CardWhite)
-                    .border(1.dp, BorderEmeraldLight, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 14.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = BrandEmerald,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = item,
-                        color = TextEmerald950,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatisticsSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 12.dp),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            StatItem(number = "4.9 ★", label = "Average Rating")
-            StatItem(number = "5,000+", label = "Lives Impacted")
-            StatItem(number = "850+", label = "Verified Reviews")
-            StatItem(number = "100%", label = "Free 5-Day Access")
-        }
-    }
-}
-
-@Composable
-private fun StatItem(number: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = number,
-            color = BrandEmerald,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = label,
-            color = TextSlate,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-// 5. Free Welcome Kit Highlight Section (Exact Match to www.pathtoinnerpeace.in)
-@Composable
-private fun WelcomeKitHighlightSection(
-    onOpenWelcomeKit: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = EmeraldDeep),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.5f))
+            )
+            .padding(horizontal = 20.dp, vertical = 28.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
         ) {
+            // Brand Logo & Brand Tagline matching www.pathtoinnerpeace.in
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(bottom = 18.dp)
             ) {
-                Box(
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.R.drawable.ic_pathtoinnerpeace_logo),
+                    contentDescription = "Path to Inner Peace Official Logo",
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(BrandGold.copy(alpha = 0.2f))
-                        .border(1.dp, BrandGold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
+                        .size(44.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
                     Text(
-                        text = "FREE TRANSFORMATION ASSETS",
+                        text = "PATH TO INNER PEACE",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.2.sp
+                    )
+                    Text(
+                        text = "Transform Your Mind, Elevate Your Life",
                         color = BrandGold,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(BrandGold)
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "INCLUDED FREE",
-                        color = EmeraldDeep,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Exclusive Pack of Free Welcome Kit",
-                color = TextWhite,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Explore 5 comprehensive transformation assets designed to kickstart your journey toward lasting inner peace.",
-                color = Color(0xFFA7F3D0),
-                fontSize = 12.sp,
-                lineHeight = 17.sp,
-                modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
-            )
-
-            // 5 Transformation Assets previews
-            val assetsList = listOf(
-                Pair(Icons.Default.Assessment, "1. Mental Fitness Assessment (Interactive diagnostic)"),
-                Pair(Icons.Default.Description, "2. Personalised Mind Report (Targeted action blueprint)"),
-                Pair(Icons.Default.GraphicEq, "3. 5-Minute Stress Reset Audio (Emergency downshift)"),
-                Pair(Icons.Default.Bedtime, "4. Better Sleep Blueprint (Circadian harmony & soundscape)"),
-                Pair(Icons.Default.MenuBook, "5. Mental Reset Starter Guide (Cognitive tools handbook)")
-            )
-
-            assetsList.forEach { (icon, label) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = BrandGold,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = label,
-                        color = TextWhite,
-                        fontSize = 12.sp,
+                        fontSize = 10.5.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Live Status Pill
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = BrandGold.copy(alpha = 0.15f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold),
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(BrandGold, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "NEW COHORT STARTING MONDAY",
+                        color = BrandGold,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
 
+            // Headline
+            Text(
+                text = "Rewire Your Mind.\nReclaim Your Peace.",
+                color = Color.White,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                lineHeight = 38.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Subtitle
+            Text(
+                text = "The 5-Day Mind Reset Challenge by Mainak Chatterjee. Break overthinking, eliminate anxiety loops, and master calm high performance in 15 minutes a day.",
+                color = Color(0xFFA7F3D0),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp,
+                modifier = Modifier.fillMaxWidth(0.95f)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Batch Timing Selector
+            Text(
+                text = "CHOOSE YOUR DAILY LIVE BATCH:",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                val batches = listOf("6:30 AM", "8:30 PM")
+                batches.forEach { batch ->
+                    val isSelected = selectedBatch == batch
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) EmeraldPrimary else EmeraldDark.copy(alpha = 0.6f))
+                            .border(
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color = if (isSelected) BrandGold else Color.White.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .clickable { onBatchChange(batch) }
+                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = if (isSelected) BrandGold else Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "$batch IST",
+                                    color = Color.White,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Text(
+                                text = if (batch == "6:30 AM") "Morning Focus" else "Evening Reset",
+                                color = if (isSelected) Color(0xFFA7F3D0) else Color.White.copy(alpha = 0.6f),
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Primary Call to Action Button
             Button(
-                onClick = onOpenWelcomeKit,
+                onClick = onClaimSeat,
+                colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .testTag("home_claim_free_seat_button")
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Claim Free Seat & Join Challenge",
+                        color = EmeraldDark,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = EmeraldDark,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Secondary Quick Somatic Reset button
+            OutlinedButton(
+                onClick = onWatchIntro,
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .testTag("button_launch_welcome_kit_home"),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandGold,
-                    contentColor = EmeraldDeep
-                )
             ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = BrandGold,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Try 60-Sec Calming Breathwork",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Guarantee Pill
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Shield,
+                    contentDescription = null,
+                    tint = BrandGold,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "100% Free Access • Zero Credit Card Required",
+                    color = Color(0xFFA7F3D0),
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SocialProofBar() {
+    Surface(
+        color = CardSurface,
+        shadowElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProofItem(number = "10,000+", label = "Seekers Impacted")
+            ProofDivider()
+            ProofItem(number = "4.9 ★", label = "Community Rating")
+            ProofDivider()
+            ProofItem(number = "50+", label = "Campus Workshops")
+        }
+    }
+}
+
+@Composable
+private fun ProofItem(number: String, label: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = number,
+            color = EmeraldDark,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Text(
+            text = label,
+            color = TextMuted,
+            fontSize = 11.sp
+        )
+    }
+}
+
+@Composable
+private fun ProofDivider() {
+    Box(
+        modifier = Modifier
+            .height(28.dp)
+            .width(1.dp)
+            .background(BorderSubtle)
+    )
+}
+
+@Composable
+private fun WelcomeKitHighlightBanner(onOpenWelcomeKit: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = EmeraldSoftBg),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(1.dp, EmeraldLight.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .background(EmeraldPrimary, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CardGiftcard,
+                    contentDescription = null,
+                    tint = BrandGold,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Claim Free Welcome Kit",
+                    color = EmeraldDark,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Includes S.T.O.P. Pocket Card, 6Hz Theta Audio & MindForge PDF Tracker.",
+                    color = TextMuted,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.clickable { onOpenWelcomeKit() }
                 ) {
                     Text(
-                        text = "Launch Free Welcome Kit →",
+                        text = "Access Welcome Kit Vault",
+                        color = EmeraldPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Icon(
-                        imageVector = Icons.Default.OpenInNew,
+                        imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        tint = EmeraldPrimary,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
@@ -915,378 +522,283 @@ private fun WelcomeKitHighlightSection(
 }
 
 @Composable
-private fun HowItWorksSection(
-    onRegisterClick: () -> Unit,
-    onCertificateClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = EmeraldDeep)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                text = "HOW IT WORKS",
-                color = BrandGold,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "How The 5-Day Mind Reset Works",
-                color = TextWhite,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "A frictionless, step-by-step transformation path designed for your busy routine.",
-                color = Color(0xFFA7F3D0),
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
-            )
-
-            val steps = listOf(
-                Triple("Step 1", "Register Free: Sign up in 30 seconds with your WhatsApp number & email.", true),
-                Triple("Step 2", "Receive Confirmation: Instant welcome & daily challenge reminder alerts straight to your phone.", false),
-                Triple("Step 3", "Daily 30-Min Practice: Breathwork, cognitive reframing & guided meditation.", false),
-                Triple("Step 4", "Earn Your Certificate: Complete all 5 days to unlock your verifiable digital credential.", true)
-            )
-
-            steps.forEachIndexed { index, (step, desc, isActionable) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(enabled = isActionable) {
-                            if (index == 0) onRegisterClick()
-                            if (index == 3) onCertificateClick()
-                        }
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .background(BrandEmerald)
-                            .border(1.dp, BrandGold, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${index + 1}",
-                            color = BrandGold,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = step,
-                                color = BrandGold,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (isActionable) {
-                                Text(
-                                    text = "• Tap to View",
-                                    color = Color(0xFFA7F3D0),
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                        Text(
-                            text = desc,
-                            color = Color(0xFFE2E8F0),
-                            fontSize = 12.sp,
-                            lineHeight = 17.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChallengeBreakdownSection(
-    isRegistered: Boolean,
+private fun CurriculumOverview(
     onSelectDay: (Int) -> Unit,
     onOpenRegistration: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "5-DAY TRANSFORMATION",
+                    color = BrandGoldDark,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Text(
+                    text = "The Curriculum Syllabus",
+                    color = TextDark,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Button(
+                onClick = onOpenRegistration,
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Register Free", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        val daysSummary = listOf(
+            Triple(1, "Awareness & The Overthinking Trap", "Learn recursive rumination biology & 3-min STOP pause."),
+            Triple(2, "Emotional Regulation & Body Anchors", "Somatic grounding, physiological sighs & parasympathetic reset."),
+            Triple(3, "Boundary Blueprint & Mental Declutter", "Defend high-focus hours & eliminate toxic draining demands."),
+            Triple(4, "Identity Shift & The Inner Critic", "Disarm imposter syndrome & build evidence-based self-trust."),
+            Triple(5, "Sustained Serenity & MindForge 360", "Automate sacred 15-min morning ritual & claim Certificate.")
+        )
+
+        daysSummary.forEach { (num, title, desc) ->
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
+                    .clickable { onSelectDay(num) }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .background(EmeraldDark, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "0$num",
+                            color = BrandGold,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = title,
+                            color = TextDark,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = desc,
+                            color = TextMuted,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = TextLight,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MentorSection(onContactCoach: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = EmeraldDark),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(BrandGold, CircleShape)
+                    .border(3.dp, Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "MC",
+                    color = EmeraldDark,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Meet Mainak Chatterjee",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Mindset & Executive Career Mentor • Founder, Path to Inner Peace",
+                color = BrandGold,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Mainak combines cognitive neuroscience, somatic breathwork, and high-performance career coaching to help executives, scholars, and ambitious professionals dismantle chronic burnout and achieve relentless clarity.",
+                color = Color(0xFFA7F3D0),
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onContactCoach,
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Chat Directly with Coach Mainak", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TestimonialsSection(testimonials: List<Testimonial>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(16.dp)
     ) {
         Text(
-            text = "DAILY BLUEPRINT",
-            color = BrandEmerald,
+            text = "REAL TRANSFORMATION STORIES",
+            color = BrandGoldDark,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp
         )
         Text(
-            text = "The 5-Day Challenge Breakdown",
-            color = TextEmerald950,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
-        )
-        Text(
-            text = "30 minutes each day carefully engineered to rewire your nervous system.",
-            color = TextSlate,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(bottom = 12.dp)
+            text = "What Alumni Say",
+            color = TextDark,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
 
-        val days = listOf(
-            Triple(1, "Day 1 • Mental Detox", "Negative Thought Awareness & Brain De-Cluttering"),
-            Triple(2, "Day 2 • Stress Reset", "Nervous System Calming & Cortisol Reduction"),
-            Triple(3, "Day 3 • Emotional Healing", "Forgiveness, Releasing Hurt & Self-Compassion"),
-            Triple(4, "Day 4 • Confidence Reset", "Overcoming Imposter Syndrome & Identity Shift"),
-            Triple(5, "Day 5 • Subconscious Mastery", "Neural Conditioning & Lifelong Mastery")
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        days.forEach { (dayNum, title, subtitle) ->
+        testimonials.forEach { t ->
             Card(
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable {
-                        if (isRegistered) {
-                            onSelectDay(dayNum)
-                        } else {
-                            onOpenRegistration()
-                        }
-                    },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = CardWhite),
-                border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
+                    .padding(vertical = 6.dp)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(14.dp))
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(16.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = title,
-                            color = BrandEmerald,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = subtitle,
-                            color = TextSlate,
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isRegistered) MintSoft else BrandGold.copy(alpha = 0.2f))
-                            .border(1.dp, if (isRegistered) BorderEmeraldLight else BrandGold, RoundedCornerShape(8.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = if (isRegistered) "Start Day $dayNum →" else "Join Free →",
-                            color = if (isRegistered) MintText else BrandGoldDark,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BenefitsSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                text = "MEASURABLE OUTCOMES",
-                color = BrandEmerald,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "What You Will Experience in 5 Days",
-                color = TextEmerald950,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Our participants report deep emotional and mental shifts after just 120 hours.",
-                color = TextSlate,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
-            )
-
-            val benefits = listOf(
-                "Quiet relentless mental chatter & overthinking in 90 seconds",
-                "Lower cortisol & activate parasympathetic recovery instantly",
-                "Break out of imposter syndrome & chronic career doubt",
-                "Reclaim restful delta sleep without sleeping aids",
-                "Permanent verifiable MindForge 360°™ completion certificate"
-            )
-
-            benefits.forEach { benefit ->
-                Row(
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = BrandEmerald,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = benefit,
-                        color = TextEmerald950,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TestimonialsSection(testimonials: List<TestimonialItem>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp)
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
-            Text(
-                text = "COMMUNITY VOICES",
-                color = BrandEmerald,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "Verified Seeker Testimonials",
-                color = TextEmerald950,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Real transformations from our Antardarshan & community members.",
-                color = TextSlate,
-                fontSize = 12.sp
-            )
-        }
-
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            items(testimonials) { item ->
-                Card(
-                    modifier = Modifier
-                        .width(280.dp)
-                        .height(230.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardWhite),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = Brush.verticalGradient(listOf(BorderLight, BorderEmeraldLight))),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            // Star rating
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                repeat(5) {
-                                    Icon(
-                                        imageVector = Icons.Default.Star,
-                                        contentDescription = null,
-                                        tint = BrandGold,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
                             Text(
-                                text = "“${item.quote}”",
-                                color = TextEmerald950,
-                                fontSize = 13.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 18.sp
+                                text = t.name,
+                                color = TextDark,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = t.role,
+                                color = TextMuted,
+                                fontSize = 11.sp
                             )
                         }
 
-                        // Avatar & Name
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = item.avatarRes),
-                                contentDescription = item.name,
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .border(1.5.dp, BrandGold, CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-
-                            Column {
-                                Text(
-                                    text = item.name,
-                                    color = TextEmerald950,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "${item.role} • ${item.location}",
-                                    color = TextSlate,
-                                    fontSize = 11.sp
+                        Row {
+                            repeat(t.rating) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = BrandGold,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "\"${t.quote}\"",
+                        color = Color(0xFF334155),
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = EmeraldSoftBg,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, EmeraldLight.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = EmeraldPrimary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Result: ${t.result}",
+                                color = EmeraldDark,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -1303,173 +815,137 @@ private fun FaqSection(faqs: List<FaqItem>) {
             .padding(16.dp)
     ) {
         Text(
-            text = "GOT QUESTIONS?",
-            color = BrandEmerald,
+            text = "ANSWERS TO COMMON QUESTIONS",
+            color = BrandGoldDark,
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp
         )
         Text(
             text = "Frequently Asked Questions",
-            color = TextEmerald950,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
+            color = TextDark,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         faqs.forEach { faq ->
-            FaqCard(faq = faq)
-        }
-    }
-}
+            var isExpanded by remember { mutableStateOf(false) }
 
-@Composable
-private fun FaqCard(faq: FaqItem) {
-    var isExpanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { isExpanded = !isExpanded },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
-        border = CardDefaults.outlinedCardBorder().copy(brush = Brush.horizontalGradient(listOf(BorderLight, BorderEmeraldLight)))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = faq.question,
-                    color = TextEmerald950,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = null,
-                    tint = BrandEmerald
-                )
-            }
-
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Text(
-                    text = faq.answer,
-                    color = TextSlate,
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    modifier = Modifier.padding(top = 10.dp)
-                )
-            }
-        }
-    }
-}
-
-// 11. Bottom CTA Banner (Matching website's bottom CTA)
-@Composable
-private fun BottomCtaBannerSection(
-    isRegistered: Boolean,
-    onAction: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = EmeraldDeep),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.5f))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(BrandGold.copy(alpha = 0.2f))
-                    .border(1.dp, BrandGold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
+                    .clickable { isExpanded = !isExpanded }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = faq.question,
+                            color = TextDark,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null,
+                            tint = EmeraldPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    AnimatedVisibility(visible = isExpanded) {
+                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                            Text(
+                                text = faq.answer,
+                                color = TextMuted,
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BottomCtaBanner(
+    onRegister: () -> Unit,
+    onOpenWelcomeKit: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(EmeraldDark)
+            .padding(24.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Begin Your Inner Reset Today",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Join our upcoming live batch. Experience firsthand how somatic grounding and cognitive reframing dissolve overthinking.",
+                color = Color(0xFFA7F3D0),
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 17.sp
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Button(
+                onClick = onRegister,
+                colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             ) {
                 Text(
-                    text = "★ START YOUR JOURNEY TODAY",
-                    color = BrandGold,
-                    fontSize = 10.sp,
+                    text = "Register for 5-Day Challenge (100% Free)",
+                    color = EmeraldDark,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    fontSize = 14.sp
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Text(
-                text = "Ready to Rewire Your Mind in 5 Days?",
-                color = TextWhite,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = "Join 1,000+ seekers in the 5 Day Mind Reset Challenge and experience true inner calm.",
-                color = Color(0xFFA7F3D0),
-                fontSize = 12.sp,
-                lineHeight = 17.sp,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onAction,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .testTag("button_bottom_challenge_cta"),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandGold,
-                    contentColor = EmeraldDeep
-                )
+            OutlinedButton(
+                onClick = onOpenWelcomeKit,
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = if (isRegistered) "Continue My Dashboard →" else "5 Day Mind Reset Challenge →",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                Text(
+                    text = "Explore Complimentary Welcome Kit",
+                    color = Color.White,
+                    fontSize = 13.sp
+                )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "MindForge 360°™ Certification • 100% Free • Beginner Friendly",
-                color = Color(0xFFD1FAE5),
-                fontSize = 10.sp
-            )
         }
     }
 }

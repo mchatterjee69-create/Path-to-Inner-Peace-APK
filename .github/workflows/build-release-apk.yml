@@ -1,0 +1,142 @@
+name: Build Android Release APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - 'release'
+          - 'debug'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compile & Package APK
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 2. Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 3. Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 4. Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+      - name: 5. Grant execute permission for gradlew
+        run: |
+          if [ ! -f ./gradlew ]; then
+            gradle wrapper
+          fi
+          chmod +x ./gradlew
+
+      - name: 6. Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: 7. Prepare & Sign Release APK
+        id: sign_apk
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          # Locate built APK
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "Error: No APK found in app/build/outputs/apk/release!"
+            exit 1
+          fi
+          echo "Found compiled APK at: $APK_PATH"
+
+          OUTPUT_DIR="build/outputs/release-apk"
+          mkdir -p "$OUTPUT_DIR"
+          FINAL_APK="$OUTPUT_DIR/PathToInnerPeace-release.apk"
+
+          # Check if custom production signing credentials are provided via GitHub Secrets
+          if [ -n "$SIGNING_KEY" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "Signing with production keystore provided in GitHub Secrets..."
+            KEYSTORE_FILE="/tmp/release.keystore"
+            echo "$SIGNING_KEY" | base64 --decode > "$KEYSTORE_FILE"
+
+            # Find apksigner in Android SDK
+            APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
+            $APKSIGNER sign --ks "$KEYSTORE_FILE" \
+              --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass "pass:$KEYSTORE_PASSWORD" \
+              --key-pass "pass:$KEY_PASSWORD" \
+              --out "$FINAL_APK" \
+              "$APK_PATH"
+            rm -f "$KEYSTORE_FILE"
+            echo "APK successfully signed with production keystore."
+          else
+            echo "No custom production keystore secrets found. Signing with auto-generated release key so APK is immediately installable..."
+            TEMP_KS="/tmp/temp-release.jks"
+            keytool -genkeypair -v \
+              -keystore "$TEMP_KS" \
+              -alias temp-key \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass android \
+              -keypass android \
+              -dname "CN=Path to Inner Peace, OU=App, O=Path to Inner Peace, C=IN"
+
+            APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
+            $APKSIGNER sign --ks "$TEMP_KS" \
+              --ks-key-alias temp-key \
+              --ks-pass pass:android \
+              --key-pass pass:android \
+              --out "$FINAL_APK" \
+              "$APK_PATH"
+            rm -f "$TEMP_KS"
+            echo "APK signed and ready for installation."
+          fi
+
+          echo "final_apk_path=$FINAL_APK" >> $GITHUB_OUTPUT
+
+      - name: 8. Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PathToInnerPeace-Release-APK
+          path: build/outputs/release-apk/*.apk
+          retention-days: 30
+
+      - name: 9. Create GitHub Release (On Tag Push)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/outputs/release-apk/*.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,255 +1,266 @@
 package com.example.data.repository
 
-import com.example.R
 import com.example.data.local.AppDatabase
-import com.example.data.model.ChallengeDayEntity
-import com.example.data.model.FaqItem
-import com.example.data.model.JournalEntryEntity
-import com.example.data.model.MembershipPlan
-import com.example.data.model.PillarItem
-import com.example.data.model.StopTechniqueStep
-import com.example.data.model.TestimonialItem
-import com.example.data.model.UserProgressEntity
+import com.example.data.local.ChallengeDayEntity
+import com.example.data.local.JournalEntity
+import com.example.data.local.UserProgressEntity
+import com.example.data.model.ChallengeDay
+import com.example.data.model.JournalEntry
+import com.example.data.model.UserProgress
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class InnerPeaceRepository(private val database: AppDatabase) {
 
-    val allDays: Flow<List<ChallengeDayEntity>> = database.challengeDao().getAllChallengeDays()
-    val userProgress: Flow<UserProgressEntity?> = database.userProgressDao().getUserProgress()
-    val journalEntries: Flow<List<JournalEntryEntity>> = database.journalDao().getAllJournalEntries()
+    private val dao = database.innerPeaceDao()
 
-    suspend fun updateDay(day: ChallengeDayEntity) {
-        database.challengeDao().updateDay(day)
-    }
-
-    suspend fun toggleDayTask(day: ChallengeDayEntity, taskIndex: Int, isChecked: Boolean) {
-        val updated = when (taskIndex) {
-            1 -> day.copy(isTask1Done = isChecked)
-            2 -> day.copy(isTask2Done = isChecked)
-            3 -> day.copy(isTask3Done = isChecked)
-            else -> day
+    val challengeDays: Flow<List<ChallengeDay>> = dao.getAllChallengeDays().map { list ->
+        if (list.isEmpty()) {
+            val initial = getInitialDays()
+            dao.insertAllChallengeDays(initial.map { it.toEntity() })
+            initial
+        } else {
+            list.map { it.toModel() }
         }
-        val allCompleted = updated.isTask1Done && updated.isTask2Done && updated.isTask3Done
-        val finalDay = updated.copy(isCompleted = allCompleted)
-        database.challengeDao().updateDay(finalDay)
     }
 
-    suspend fun saveDayReflection(dayNumber: Int, reflection: String) {
-        database.challengeDao().updateDayNotes(dayNumber, reflection)
+    val journalEntries: Flow<List<JournalEntry>> = dao.getAllJournalEntries().map { list ->
+        list.map { it.toModel() }
     }
 
-    suspend fun saveJournalEntry(entry: JournalEntryEntity): Long {
-        return database.journalDao().insertJournalEntry(entry)
+    val userProgress: Flow<UserProgress> = dao.getUserProgress().map { entity ->
+        if (entity == null) {
+            val defaultProgress = UserProgress()
+            dao.insertUserProgress(defaultProgress.toEntity())
+            defaultProgress
+        } else {
+            entity.toModel()
+        }
     }
 
-    suspend fun claimCertificate(date: String) {
-        database.userProgressDao().claimCertificate(date)
-    }
+    suspend fun updateTaskCompletion(dayNumber: Int, taskIndex: Int, isChecked: Boolean) {
+        val entity = dao.getChallengeDay(dayNumber) ?: return
+        val completedList = parseBooleans(entity.completedTasksJson).toMutableList()
+        while (completedList.size <= taskIndex) {
+            completedList.add(false)
+        }
+        completedList[taskIndex] = isChecked
 
-    suspend fun updateUserName(name: String) {
-        database.userProgressDao().updateUserName(name)
-    }
-
-    suspend fun registerUser(name: String, email: String, whatsapp: String, batch: String) {
-        database.userProgressDao().registerUser(name, email, whatsapp, batch)
-    }
-
-    suspend fun incrementStreak() {
-        database.userProgressDao().incrementStreak()
-    }
-
-    // EXACT Testimonials from www.pathtoinnerpeace.in with real downloaded avatars
-    fun getTestimonials(): List<TestimonialItem> = listOf(
-        TestimonialItem(
-            id = "1",
-            name = "Kakali Mukherjee",
-            role = "Sr. Executive, Antardarshan",
-            location = "Kolkata, India",
-            avatarRes = R.drawable.seeker_kakali,
-            rating = 5,
-            quote = "I never imagined such clarity and emotional healing was possible in such a short time. An absolute blessing for my emotional well-being."
-        ),
-        TestimonialItem(
-            id = "2",
-            name = "Ujjal Gayan",
-            role = "Facilitator, Antardarshan",
-            location = "Kolkata, India",
-            avatarRes = R.drawable.seeker_ujjal,
-            rating = 5,
-            quote = "Whole Program completely changed how I think, feel, and live."
-        ),
-        TestimonialItem(
-            id = "3",
-            name = "Swati Das",
-            role = "Coordinator, Antardarshan",
-            location = "West Bengal, India",
-            avatarRes = R.drawable.seeker_swati,
-            rating = 5,
-            quote = "My relationship and emotional stability improved a lot."
-        ),
-        TestimonialItem(
-            id = "4",
-            name = "Manabendra Roy",
-            role = "Executive, Antardarshan",
-            location = "Kolkata, India",
-            avatarRes = R.drawable.seeker_manabendra,
-            rating = 5,
-            quote = "I came broken, I left empowered. thanks to Path to Inner peace."
-        ),
-        TestimonialItem(
-            id = "5",
-            name = "Moloy Gayan",
-            role = "Executive, Antardarshan",
-            location = "West Bengal, India",
-            avatarRes = R.drawable.seeker_moloy,
-            rating = 5,
-            quote = "Within weeks, my stress reduced and my clarity improved. It feels like I finally have control over my life."
-        ),
-        TestimonialItem(
-            id = "6",
-            name = "Biswajot Roy",
-            role = "Secretary, Antardarshan",
-            location = "Kolkata, India",
-            avatarRes = R.drawable.seeker_biswajot,
-            rating = 5,
-            quote = "From confusion to clarity, the transformations we have seen during holistic program of Path to Inner Peace are truly remarkable."
-        ),
-        TestimonialItem(
-            id = "7",
-            name = "Amrita Ghosh",
-            role = "Owner, Monginis Batanagar",
-            location = "Kolkata, India",
-            avatarRes = R.drawable.seeker_amrita,
-            rating = 5,
-            quote = "Very much satisfied after 3 sessions, I just tell it is really helpful for me.."
+        val updatedEntity = entity.copy(
+            completedTasksJson = completedList.joinToString(",") { it.toString() }
         )
-    )
+        dao.updateChallengeDay(updatedEntity)
+    }
 
-    // EXACT FAQs from www.pathtoinnerpeace.in
-    fun getFaqs(): List<FaqItem> = listOf(
-        FaqItem(
-            question = "Is the 5-Day Mind Reset Challenge completely free?",
-            answer = "Yes! The 5-Day 30-Minute Mind Reset Challenge is 100% free with no hidden charges or credit card required."
-        ),
-        FaqItem(
-            question = "Can beginners with zero meditation experience join?",
-            answer = "Absolutely. The program is specifically structured for beginners and busy professionals. Every session is fully guided step-by-step."
-        ),
-        FaqItem(
-            question = "How much time do I need to dedicate daily?",
-            answer = "Only 30 minutes per day! You can complete the sessions at your own pace morning, afternoon, or night."
-        ),
-        FaqItem(
-            question = "Will daily recordings and materials be available?",
-            answer = "Yes, you get full access to daily video/audio sessions, breathing guides, journal prompts, and guided tracks in your web dashboard."
-        ),
-        FaqItem(
-            question = "Can I access this challenge from my mobile device?",
-            answer = "Yes! Path to Inner Peace is built as a progressive web app (PWA), perfectly optimized for smartphones, tablets, and desktop browsers."
-        ),
-        FaqItem(
-            question = "What happens after completing the 5 days?",
-            answer = "You will receive an official verifiable Certificate of Completion and the option to join our premium MindForge 360°™ membership for long-term growth."
+    suspend fun updateReflection(dayNumber: Int, notes: String) {
+        val entity = dao.getChallengeDay(dayNumber) ?: return
+        val updated = entity.copy(reflectionNotes = notes)
+        dao.updateChallengeDay(updated)
+    }
+
+    suspend fun addJournalEntry(
+        mood: String,
+        stressBefore: Int,
+        stressAfter: Int,
+        reflection: String,
+        gratitude: String,
+        emotionalBurden: String
+    ) {
+        val entry = JournalEntity(
+            timestamp = System.currentTimeMillis(),
+            mood = mood,
+            stressBefore = stressBefore,
+            stressAfter = stressAfter,
+            reflection = reflection,
+            gratitude = gratitude,
+            emotionalBurden = emotionalBurden
         )
-    )
+        dao.insertJournalEntry(entry)
+    }
 
-    // EXACT Membership Plans from www.pathtoinnerpeace.in
-    fun getMembershipPlans(): List<MembershipPlan> = listOf(
-        MembershipPlan(
-            id = "INNER_SHIFT",
-            name = "Basic Shift",
-            tagline = "Build Your Mental Fitness Foundation",
-            priceINR = 199,
-            period = "Monthly Access",
-            badge = "BEGINNER FRIENDLY",
-            popular = false,
-            features = listOf(
-                "Foundation Meditation Training",
-                "Mindfulness Training",
-                "Essential Sound Therapy",
-                "Daily Stress Relief Techniques",
-                "Overthinking Reset Practices",
-                "Weekly Guided Practice Plan",
-                "Better Sleep Relaxation Audio",
-                "Mental Reset Starter Guide",
-                "Monthly Mental Fitness Assessment",
-                "Progress Tracking",
-                "Community Updates",
-                "Digital Certificate of Completion"
-            ),
-            buttonText = "Join Now",
-            colorScheme = "emerald",
-            paymentUrl = "https://rzp.io/rzp/O6VyUfSW"
-        ),
-        MembershipPlan(
-            id = "MIND_MASTERY_PRO",
-            name = "MIND MASTERY PRO",
-            tagline = "Accelerate Your Mental Growth",
-            priceINR = 499,
-            period = "Monthly Access",
-            badge = "MOST POPULAR CHOICE",
-            popular = true,
-            features = listOf(
-                "Everything in Basic, PLUS:",
-                "Advanced Meditation Training",
-                "Professional Mindfulness Program",
-                "Guided Sound Therapy Sessions",
-                "Emotional Balance Practices",
-                "Focus & Mental Clarity Training",
-                "Weekly LIVE Coaching Sessions",
-                "Standard Personal Practice Roadmap",
-                "WhatsApp Community Support",
-                "MindForge 360°™ Community Access",
-                "Exclusive Monthly Workshops",
-                "Advanced CBT Exercises",
-                "Digital Certificate of Completion"
-            ),
-            buttonText = "Upgrade Now (₹499)",
-            colorScheme = "gold",
-            paymentUrl = "https://rzp.io/rzp/Xv7Q6XB"
-        ),
-        MembershipPlan(
-            id = "INNER_TRANSFORMATION_ELITE",
-            name = "INNER TRANSFORMATION ELITE",
-            tagline = "Complete Mind Transformation Experience",
-            priceINR = 1499,
-            period = "Monthly Access",
-            badge = "LUXURY ELITE MEMBERSHIP",
-            popular = false,
-            features = listOf(
-                "Everything in Pro, PLUS:",
-                "1:1 Personal Coaching with Mainak",
-                "Custom Neural Reprogramming Track",
-                "Priority WhatsApp VIP Line",
-                "Deep Somatic Release Mentorship",
-                "Career Axis Alignment Blueprint",
-                "Full VIP Community Leadership Circle"
-            ),
-            buttonText = "Apply for Elite (₹1,499)",
-            colorScheme = "emerald",
-            paymentUrl = "https://rzp.io/rzp/x8BS9RM"
+    suspend fun registerUser(name: String, email: String, phone: String, batch: String) {
+        val current = UserProgressEntity(
+            id = 1,
+            userName = name,
+            email = email,
+            phone = phone,
+            batchTime = batch,
+            completedDaysCount = 1,
+            totalStreak = 1,
+            isCertificateClaimed = false,
+            certificateIssuedDate = ""
         )
-    )
+        dao.insertUserProgress(current)
+    }
 
-    // The STOP Technique Steps
-    fun getStopSteps(): List<StopTechniqueStep> = listOf(
-        StopTechniqueStep("S", "Stop", "Pause whatever you are doing. Disengage from automatic reactions.", 10),
-        StopTechniqueStep("T", "Take a Breath", "Inhale deeply into the belly; exhale slowly to activate vagal braking.", 20),
-        StopTechniqueStep("O", "Observe", "Notice bodily sensations, emotions, and thoughts without judging them.", 30),
-        StopTechniqueStep("P", "Proceed", "Move forward with calm clarity and sovereign intention.", 15)
-    )
+    suspend fun claimCertificate(name: String, date: String) {
+        val entity = UserProgressEntity(
+            id = 1,
+            userName = name,
+            email = "",
+            phone = "",
+            batchTime = "6:30 AM",
+            completedDaysCount = 5,
+            totalStreak = 5,
+            isCertificateClaimed = true,
+            certificateIssuedDate = date
+        )
+        dao.insertUserProgress(entity)
+    }
 
-    // 10 Pillars Curriculum
-    fun getTenPillars(): List<PillarItem> = listOf(
-        PillarItem(1, "01", "Stress Management", "Nervous System Regulation & CBT", "Evidence-informed tools to understand, regulate and transform stress.", listOf("Vagus nerve box breathing", "Cortisol downshift ritual", "Somatic tension unclench")),
-        PillarItem(2, "02", "Meditation & Mindfulness", "Awareness & Attention Control", "Daily guided mental focus practices to quiet mental chatter and cultivate stillness.", listOf("Thought cloud observation", "Mindful tea grounding", "Body scan serenity")),
-        PillarItem(3, "03", "Emotional Healing & Forgiveness", "Heart Coherence & Somatics", "Release repressed sorrow, anger, and guilt with radical self-compassion.", listOf("Forgiveness letter ritual", "Heart-brain coherence breathing", "Emotional weight unburdening")),
-        PillarItem(4, "04", "Overthinking & Anxiety Reset", "Metacognitive Decoupling", "Stop catastrophic rumination in under 90 seconds using CBT thought disputation.", listOf("ANTs labeling", "Evidence for vs against grid", "Worry container visualization")),
-        PillarItem(5, "05", "Subconscious Reprogramming", "Neural Conditioning & Alpha Waves", "Rewire deep childhood limiting beliefs and step into innate self-worth.", listOf("Quantum self-image reframing", "Morning mirror identity alignment", "Subconscious sleep audio")),
-        PillarItem(6, "06", "Restorative Sleep Architecture", "Circadian & Neurochemical Harmony", "Reclaim deep delta-wave sleep through circadian rhythm synchronization.", listOf("Digital sundown blue-light detox", "Yoga Nidra NSDR protocol", "Brain-dump reflection journal")),
-        PillarItem(7, "07", "Inner Child & Self-Compassion", "Reparenting the Vulnerable Self", "Silence the relentless inner critic and cultivate protective self-warmth.", listOf("Dialogue with younger self", "Compassionate hand-on-heart pause", "Affirmation of inherent dignity")),
-        PillarItem(8, "08", "Relationship Harmony & Boundaries", "Interpersonal Emotional Sovereignty", "Establish clear boundaries with zero guilt and communicate with calm clarity.", listOf("10-second reactive pause rule", "Non-violent clarity scripts", "Energetic detachment visualization")),
-        PillarItem(9, "09", "Career Axis & Professional Sanity", "Burnout Prevention & Purpose", "Eliminate corporate burnout, workplace anxiety, and imposter syndrome.", listOf("Flow state deep-work rituals", "Meeting composure protocol", "Career Axis values matrix")),
-        PillarItem(10, "10", "Quantum Awareness & Lifelong Mastery", "MindForge 360°™ Transcendence", "Live as the conscious author of your reality with unshakable inner peace.", listOf("Alpha/Theta brainwave anchoring", "Daily gratitude frequency", "MindForge 360° mastery circle"))
-    )
+    private fun ChallengeDay.toEntity(): ChallengeDayEntity {
+        return ChallengeDayEntity(
+            dayNumber = dayNumber,
+            title = title,
+            subtitle = subtitle,
+            description = description,
+            audioDuration = audioDuration,
+            microAction = microAction,
+            tasksJson = tasks.joinToString("|||"),
+            completedTasksJson = completedTasks.joinToString(",") { it.toString() },
+            reflectionNotes = reflectionNotes
+        )
+    }
+
+    private fun ChallengeDayEntity.toModel(): ChallengeDay {
+        return ChallengeDay(
+            dayNumber = dayNumber,
+            title = title,
+            subtitle = subtitle,
+            description = description,
+            audioDuration = audioDuration,
+            microAction = microAction,
+            tasks = tasksJson.split("|||").filter { it.isNotBlank() },
+            completedTasks = parseBooleans(completedTasksJson),
+            reflectionNotes = reflectionNotes
+        )
+    }
+
+    private fun JournalEntity.toModel(): JournalEntry {
+        return JournalEntry(
+            id = id,
+            timestamp = timestamp,
+            mood = mood,
+            stressBefore = stressBefore,
+            stressAfter = stressAfter,
+            reflection = reflection,
+            gratitude = gratitude,
+            emotionalBurden = emotionalBurden
+        )
+    }
+
+    private fun UserProgress.toEntity(): UserProgressEntity {
+        return UserProgressEntity(
+            id = id,
+            userName = userName,
+            email = email,
+            phone = phone,
+            batchTime = batchTime,
+            completedDaysCount = completedDaysCount,
+            totalStreak = totalStreak,
+            isCertificateClaimed = isCertificateClaimed,
+            certificateIssuedDate = certificateIssuedDate
+        )
+    }
+
+    private fun UserProgressEntity.toModel(): UserProgress {
+        return UserProgress(
+            id = id,
+            userName = userName,
+            email = email,
+            phone = phone,
+            batchTime = batchTime,
+            completedDaysCount = completedDaysCount,
+            totalStreak = totalStreak,
+            isCertificateClaimed = isCertificateClaimed,
+            certificateIssuedDate = certificateIssuedDate
+        )
+    }
+
+    private fun parseBooleans(csv: String): List<Boolean> {
+        if (csv.isBlank()) return emptyList()
+        return csv.split(",").map { it.trim().toBoolean() }
+    }
+
+    companion object {
+        fun getInitialDays(): List<ChallengeDay> {
+            return listOf(
+                ChallengeDay(
+                    dayNumber = 1,
+                    title = "Awareness & The Overthinking Trap",
+                    subtitle = "Day 1: Recognize Mental Loops & Reclaim Attention",
+                    description = "Discover the neurobiology of recursive rumination. Today, you learn to observe the inner chatter without identifying with it.",
+                    audioDuration = "12 mins guided session",
+                    microAction = "Practice the 3-minute STOP technique right after checking social media or email.",
+                    tasks = listOf(
+                        "Listen to Day 1 Masterclass audio (12 mins)",
+                        "Identify 2 recurring worry triggers in your notes",
+                        "Complete the STOP pause before lunch",
+                        "Log your evening stress score"
+                    ),
+                    completedTasks = listOf(false, false, false, false)
+                ),
+                ChallengeDay(
+                    dayNumber = 2,
+                    title = "Emotional Regulation & Body Anchors",
+                    subtitle = "Day 2: Somatic Grounding for Acute Anxiety",
+                    description = "When the nervous system triggers fight-or-flight, logic shuts down. Master 4-7-8 and physiological sigh breathing.",
+                    audioDuration = "14 mins breathwork coaching",
+                    microAction = "Perform 3 physiological sighs before any stressful meeting or difficult conversation.",
+                    tasks = listOf(
+                        "Complete the morning diaphragmatic breathwork (7 mins)",
+                        "Notice somatic tension in neck, jaw, or chest",
+                        "Apply the 5-4-3-2-1 sensory grounding anchor",
+                        "Journal one emotional release in the evening"
+                    ),
+                    completedTasks = listOf(false, false, false, false)
+                ),
+                ChallengeDay(
+                    dayNumber = 3,
+                    title = "Boundary Blueprint & Mental Declutter",
+                    subtitle = "Day 3: Protecting Energy from Toxic Depletion",
+                    description = "Inner peace requires relational boundaries. Build a clear energetic boundary around your high-focus hours and personal life.",
+                    audioDuration = "15 mins mindset training",
+                    microAction = "Say a polite, non-negotiable 'No' to one non-essential demand today.",
+                    tasks = listOf(
+                        "Conduct an energy drain audit (people, habits, tasks)",
+                        "Draft your 'Not-to-Do' list for this week",
+                        "Set up digital boundaries: zero screens 60 mins before bed",
+                        "Complete evening gratitude reflection"
+                    ),
+                    completedTasks = listOf(false, false, false, false)
+                ),
+                ChallengeDay(
+                    dayNumber = 4,
+                    title = "Identity Shift & The Inner Critic",
+                    subtitle = "Day 4: From Self-Sabotage to Sovereign Self-Trust",
+                    description = "Silence the harsh internal imposter voice. Shift from self-judgment to compassionate, evidence-based self-efficacy.",
+                    audioDuration = "16 mins cognitive reframing",
+                    microAction = "Whenever you catch self-criticism, replace it with: 'I am learning, growing, and centered.'",
+                    tasks = listOf(
+                        "Write down 3 false narratives your inner critic tells you",
+                        "Reframe each narrative with objective factual counters",
+                        "Practice 5 minutes of heart-brain coherence meditation",
+                        "Affirm your core professional and personal values"
+                    ),
+                    completedTasks = listOf(false, false, false, false)
+                ),
+                ChallengeDay(
+                    dayNumber = 5,
+                    title = "Sustained Serenity & MindForge 360",
+                    subtitle = "Day 5: Long-Term Integration & Mastery",
+                    description = "Consolidate your breakthrough into a lifelong lifestyle system. Integrate the MindForge 360 framework and claim your certificate.",
+                    audioDuration = "18 mins integration masterclass",
+                    microAction = "Commit to your daily non-negotiable 15-minute sacred morning routine.",
+                    tasks = listOf(
+                        "Design your permanent 15-minute daily reset ritual",
+                        "Review all 5-day reflections and celebrate wins",
+                        "Claim and personalize your MindForge 360° Certificate",
+                        "Explore the Inner Shift Circle & 1:1 Coaching roadmap"
+                    ),
+                    completedTasks = listOf(false, false, false, false)
+                )
+            )
+        }
+    }
 }

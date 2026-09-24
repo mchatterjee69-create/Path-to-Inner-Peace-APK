@@ -1,7 +1,8 @@
 {
   "name": "Path to Inner Peace",
-  "description": "Premium Mental Reset & 5-Day Challenge by Mainak Chatterjee",
+  "description": "Official Path to Inner Peace 5-Day Mind Reset Challenge and MindForge 360 platform by Mainak Chatterjee.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
-

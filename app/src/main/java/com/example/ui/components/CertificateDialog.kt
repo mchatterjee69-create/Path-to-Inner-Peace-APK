@@ -1,9 +1,7 @@
 package com.example.ui.components
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,22 +10,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,9 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,14 +41,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandGold
-import com.example.ui.theme.BrandGoldLight
-import com.example.ui.theme.EmeraldCard
+import com.example.ui.theme.BrandGoldDark
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.TextWhite
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
 
 @Composable
 fun CertificateDialog(
@@ -63,268 +54,208 @@ fun CertificateDialog(
     onClaimCertificate: (String) -> Unit,
     onClose: () -> Unit
 ) {
-    val context = LocalContext.current
-    var inputName by remember { mutableStateOf(currentName.ifEmpty { "Mindful Seeker" }) }
+    var recipientName by remember { mutableStateOf(if (currentName == "Mindful Seeker") "" else currentName) }
+    var isClaimed by remember { mutableStateOf(issuedDate.isNotBlank()) }
+    val clipboardManager = LocalClipboardManager.current
+    var copiedNotice by remember { mutableStateOf(false) }
 
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onClose) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .padding(vertical = 24.dp),
-            shape = RoundedCornerShape(24.dp),
-            color = EmeraldDeep
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0xFF02201D),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top close
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.WorkspacePremium,
-                            contentDescription = null,
-                            tint = BrandGold,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.size(8.dp))
-                        Text(
-                            text = "MindForge 360°™ Official Certificate",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = TextWhite,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = onClose,
-                        modifier = Modifier
-                            .background(EmeraldDark, CircleShape)
-                            .size(32.dp)
+                        modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Icon(
-                            Icons.Default.Close,
+                            imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TextWhite,
-                            modifier = Modifier.size(18.dp)
+                            tint = Color.White
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            tint = BrandGold,
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "MindForge 360°™ Certificate",
+                            color = BrandGold,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // The Certificate Sheet
+                // Certificate parchment container
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    EmeraldDark,
-                                    EmeraldDeep,
-                                    EmeraldCard
-                                )
-                            ),
-                            RoundedCornerShape(16.dp)
-                        )
-                        .border(2.dp, Brush.linearGradient(listOf(BrandGold, Color(0xFFD97706), BrandGoldLight)), RoundedCornerShape(16.dp))
-                        .padding(20.dp)
+                        .background(Color(0xFFFFFBEB), RoundedCornerShape(12.dp))
+                        .border(3.dp, BrandGoldDark, RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "PATH TO INNER PEACE",
+                            color = EmeraldDark,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = BrandGold,
                             letterSpacing = 2.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "CERTIFICATE OF COMPLETION",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextWhite,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = "MindForge 360°™ 5-Day Mental Reset",
-                            fontSize = 12.sp,
-                            color = BrandGoldLight,
-                            fontStyle = FontStyle.Italic
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "This is proudly presented to",
-                            fontSize = 11.sp,
-                            color = TextWhite.copy(alpha = 0.65f)
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = inputName,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandGold,
-                            textAlign = TextAlign.Center
+                            color = BrandGoldDark,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "for successfully completing the rigorous 5-Day Mind Reset Challenge, demonstrating commitment to nervous-system regulation, cognitive restructuring, and emotional transformation.",
+                            text = "This proudly certifies that",
+                            color = Color(0xFF475569),
                             fontSize = 11.sp,
-                            lineHeight = 16.sp,
-                            color = TextWhite.copy(alpha = 0.85f),
+                            fontStyle = FontStyle.Italic
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = if (recipientName.isBlank()) "Mindful Seeker" else recipientName,
+                            color = EmeraldDark,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Serif,
                             textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                        // Signatures & Seals
+                        Text(
+                            text = "has completed the 5-Day Mind Reset Challenge and demonstrated mastery in Somatic Nervous Regulation & The S.T.O.P. Protocol.",
+                            color = Color(0xFF334155),
+                            fontSize = 11.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 15.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Bottom
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(horizontalAlignment = Alignment.Start) {
+                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    text = if (issuedDate.isNotBlank()) issuedDate else "Issued upon claim",
+                                    color = Color(0xFF64748B),
+                                    fontSize = 10.sp
+                                )
+                                Text(
+                                    text = "Date Verified",
+                                    color = Color(0xFF94A3B8),
+                                    fontSize = 9.sp
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = "Mainak Chatterjee",
-                                    fontSize = 15.sp,
-                                    fontFamily = FontFamily.Cursive,
+                                    color = EmeraldDark,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = BrandGoldLight
-                                )
-                                Box(modifier = Modifier.size(width = 90.dp, height = 1.dp).background(BrandGold))
-                                Text(
-                                    text = "Founder & Head Coach",
-                                    fontSize = 9.sp,
-                                    color = TextWhite.copy(alpha = 0.7f)
+                                    fontFamily = FontFamily.Cursive
                                 )
                                 Text(
-                                    text = "Quantum Alchemist",
-                                    fontSize = 8.sp,
-                                    color = TextWhite.copy(alpha = 0.5f)
-                                )
-                            }
-
-                            // Seal
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(52.dp)
-                                    .background(EmeraldDark, CircleShape)
-                                    .border(1.5.dp, BrandGold, CircleShape)
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        imageVector = Icons.Default.Verified,
-                                        contentDescription = "Verified",
-                                        tint = BrandGold,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Text(
-                                        text = "VERIFIED",
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BrandGold
-                                    )
-                                }
-                            }
-
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = issuedDate.ifEmpty { "September 2026" },
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = TextWhite
-                                )
-                                Box(modifier = Modifier.size(width = 80.dp, height = 1.dp).background(BrandGold.copy(alpha = 0.5f)))
-                                Text(
-                                    text = "Credential ID",
-                                    fontSize = 8.sp,
-                                    color = TextWhite.copy(alpha = 0.6f)
-                                )
-                                Text(
-                                    text = "MF360-PIP-8472",
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandGold
+                                    text = "Founder & Mentor",
+                                    color = Color(0xFF94A3B8),
+                                    fontSize = 9.sp
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Name customization input
-                OutlinedTextField(
-                    value = inputName,
-                    onValueChange = { inputName = it },
-                    label = { Text("Name on Certificate", color = BrandGold) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = BrandGold,
-                        unfocusedBorderColor = BrandEmerald,
-                        focusedTextColor = TextWhite,
-                        unfocusedTextColor = TextWhite
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = true
-                )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            onClaimCertificate(inputName)
-                            Toast.makeText(context, "Certificate issued & saved offline!", Toast.LENGTH_SHORT).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandGold,
-                            contentColor = EmeraldDeep
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(46.dp)
-                    ) {
-                        Text(text = "Save & Claim", fontWeight = FontWeight.Bold)
-                    }
+                if (!isClaimed) {
+                    OutlinedTextField(
+                        value = recipientName,
+                        onValueChange = { recipientName = it },
+                        label = { Text("Your Full Name (For Certificate)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
                         onClick = {
-                            Toast.makeText(context, "MindForge 360°™ Certificate copied to clipboard!", Toast.LENGTH_SHORT).show()
+                            if (recipientName.isNotBlank()) {
+                                isClaimed = true
+                                onClaimCertificate(recipientName)
+                            }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BrandEmerald,
-                            contentColor = TextWhite
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(46.dp)
+                        enabled = recipientName.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = TextWhite, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.size(6.dp))
-                        Text(text = "Share", color = TextWhite, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = "Personalize & Claim Certificate",
+                            color = EmeraldDark,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                val shareText = "I just completed the 5-Day Mind Reset Challenge by Mainak Chatterjee on Path to Inner Peace! Verified Certification earned."
+                                clipboardManager.setText(AnnotatedString(shareText))
+                                copiedNotice = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Share Achievement")
+                        }
+                    }
+
+                    if (copiedNotice) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Copied certificate message to clipboard!",
+                            color = Color(0xFFA7F3D0),
+                            fontSize = 11.sp
+                        )
                     }
                 }
             }

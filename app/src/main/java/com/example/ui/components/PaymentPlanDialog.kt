@@ -2,7 +2,6 @@ package com.example.ui.components
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,16 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -36,23 +32,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.data.model.MembershipPlan
-import com.example.ui.theme.BorderEmeraldLight
-import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandGold
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.TextWhite
-import java.net.URLEncoder
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
 
 @Composable
 fun PaymentPlanDialog(
@@ -61,105 +52,74 @@ fun PaymentPlanDialog(
 ) {
     val context = LocalContext.current
 
-    fun openRazorpay() {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(plan.paymentUrl))
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "Could not open checkout page: ${plan.paymentUrl}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun openWhatsAppSupport() {
-        val text = "Hello Coach Mainak, I am interested in joining the ${plan.name} (₹${plan.priceINR}). Please share payment and enrollment confirmation details."
-        try {
-            val encoded = URLEncoder.encode(text, "UTF-8")
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/919163670300?text=$encoded"))
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "WhatsApp support: +91 91636 70300", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onClose) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .padding(vertical = 16.dp),
             shape = RoundedCornerShape(24.dp),
-            color = EmeraldDeep,
-            border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.5f))
+            color = EmeraldDark,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp)
+                    .padding(22.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(BrandGold.copy(alpha = 0.2f))
-                                .border(1.dp, BrandGold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = plan.badge,
-                                color = BrandGold,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = plan.name,
-                            color = TextWhite,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
+                Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = onClose,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(EmeraldDark, CircleShape)
-                            .testTag("button_close_payment_dialog")
+                        modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TextWhite,
-                            modifier = Modifier.size(18.dp)
+                            tint = Color.White
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 36.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        plan.badge?.let { badge ->
+                            Box(
+                                modifier = Modifier
+                                    .background(BrandGold.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                    .border(1.dp, BrandGold, RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = badge.uppercase(),
+                                    color = BrandGold,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+
+                        Text(
+                            text = plan.name,
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-                Text(
-                    text = plan.tagline,
-                    color = Color(0xFFA7F3D0),
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
-                )
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // Price Tag Banner
+                // Price Card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(EmeraldDark)
-                        .border(1.dp, BorderEmeraldLight, RoundedCornerShape(16.dp))
+                        .background(EmeraldMedium, RoundedCornerShape(12.dp))
+                        .border(1.dp, BrandGold.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                         .padding(16.dp)
                 ) {
                     Row(
@@ -170,127 +130,104 @@ fun PaymentPlanDialog(
                         Column {
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
-                                    text = "₹${plan.priceINR}",
+                                    text = plan.price,
                                     color = BrandGold,
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Black
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.ExtraBold
                                 )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = " / ${plan.period}",
-                                    color = Color(0xFFA7F3D0),
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+                                    text = plan.originalPrice,
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    fontSize = 14.sp,
+                                    textDecoration = TextDecoration.LineThrough
                                 )
                             }
                             Text(
-                                text = "Instant Access • 100% Secure Checkout",
-                                color = Color(0xFFD1FAE5),
+                                text = plan.period,
+                                color = Color(0xFFA7F3D0),
                                 fontSize = 11.sp
                             )
                         }
 
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null,
-                            tint = BrandGold,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Lock, contentDescription = null, tint = BrandGold, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Razorpay Secure", color = Color.White, fontSize = 11.sp)
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "WHAT'S INCLUDED",
-                    color = BrandGold,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    text = "Included with your enrollment:",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.align(Alignment.Start)
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
-                plan.features.forEach { feat ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = BrandGold,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = feat,
-                            color = TextWhite,
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp
-                        )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    plan.features.forEach { feature ->
+                        Row(verticalAlignment = Alignment.Top) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = BrandGold,
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .padding(top = 2.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = feature,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
+                            )
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Razorpay Button
                 Button(
-                    onClick = { openRazorpay() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .testTag("button_razorpay_checkout"),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGold,
-                        contentColor = EmeraldDeep
-                    )
+                    onClick = {
+                        val paymentUrl = "https://rzp.io/l/pathtoinnerpeace"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl))
+                        context.startActivity(intent)
+                        onClose()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = "Proceed to Razorpay Checkout (₹${plan.priceINR}) →",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = "Proceed to Razorpay Checkout",
+                        color = EmeraldDark,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // WhatsApp Confirmation fallback
                 OutlinedButton(
-                    onClick = { openWhatsAppSupport() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(46.dp),
+                    onClick = {
+                        val url = "https://wa.me/919830000000?text=" + Uri.encode("Hi Mainak, I would like to enroll in the ${plan.name} (${plan.price}). Please guide me through the onboarding.")
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                        onClose()
+                    },
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Chat,
-                            contentDescription = null,
-                            tint = BrandGold,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = "Confirm / Pay via WhatsApp Support",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
+                    Icon(Icons.Default.Phone, contentDescription = null, tint = BrandGold, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Instant WhatsApp Enrollment Help", color = Color.White)
                 }
             }
         }

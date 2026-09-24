@@ -2,10 +2,8 @@ package com.example.ui.components
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,22 +15,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -41,309 +34,163 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.example.ui.theme.BorderEmeraldLight
-import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandGold
-import com.example.ui.theme.EmeraldCard
 import com.example.ui.theme.EmeraldDark
-import com.example.ui.theme.EmeraldDeep
-import com.example.ui.theme.TextWhite
-
-data class WelcomeKitAsset(
-    val id: String,
-    val title: String,
-    val category: String,
-    val summary: String,
-    val icon: ImageVector,
-    val badge: String
-)
+import com.example.ui.theme.EmeraldMedium
+import com.example.ui.theme.EmeraldPrimary
 
 @Composable
 fun WelcomeKitDialog(
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onOpenChallenge: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val portalUrl = "https://welcomekit-pathtoinnerpeace.vercel.app"
 
-    val assets = listOf(
-        WelcomeKitAsset(
-            id = "assessment",
-            title = "1. Mental Fitness Assessment",
-            category = "Self-Evaluation Diagnostic",
-            summary = "A calibrated 10-point assessment quantifying your baseline stress reactivity, mental clutter, and autonomic nervous system state.",
-            icon = Icons.Default.Assessment,
-            badge = "INTERACTIVE EVALUATION"
-        ),
-        WelcomeKitAsset(
-            id = "report",
-            title = "2. Personalised Mind Report",
-            category = "Custom Neural Blueprint",
-            summary = "Targeted action plan breaking down your primary cognitive hurdles with tailored breathwork sequences and focus anchors.",
-            icon = Icons.Default.Description,
-            badge = "TAILORED ROADMAP"
-        ),
-        WelcomeKitAsset(
-            id = "stress-audio",
-            title = "3. 5-Minute Stress Reset Audio",
-            category = "Emergency Downshift Track",
-            summary = "Fast-acting vagal nerve calming audio infused with 528Hz Solfeggio frequency to halt panic or workplace overwhelm in 300 seconds.",
-            icon = Icons.Default.GraphicEq,
-            badge = "EMERGENCY AUDIO"
-        ),
-        WelcomeKitAsset(
-            id = "sleep-blueprint",
-            title = "4. Better Sleep Blueprint",
-            category = "Circadian Optimization",
-            summary = "Scientifically designed digital sundown routine, delta-wave acoustic frequencies, and evening cognitive brain-dump protocols.",
-            icon = Icons.Default.Bedtime,
-            badge = "RESTORATIVE SLEEP"
-        ),
-        WelcomeKitAsset(
-            id = "starter-guide",
-            title = "5. Mental Reset Starter Guide",
-            category = "Comprehensive Handbook",
-            summary = "Step-by-step master handbook introducing the 10 Transformation Pillars, ANTs reframing worksheets, and daily habit anchors.",
-            icon = Icons.Default.MenuBook,
-            badge = "FOUNDATION HANDBOOK"
-        )
-    )
-
-    fun launchPortal() {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(portalUrl))
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            Toast.makeText(context, "Could not open link: $portalUrl", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onClose) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .padding(vertical = 16.dp),
             shape = RoundedCornerShape(24.dp),
-            color = EmeraldDeep,
-            border = androidx.compose.foundation.BorderStroke(1.dp, BrandGold.copy(alpha = 0.5f))
+            color = EmeraldDark,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp)
+                    .padding(22.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(BrandGold.copy(alpha = 0.2f))
-                                .border(1.dp, BrandGold.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(
-                                text = "FREE WELCOME KIT",
-                                color = BrandGold,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "5 Transformation Assets",
-                            color = TextWhite,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
+                Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = onClose,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(EmeraldDark, CircleShape)
-                            .testTag("button_close_welcome_kit")
+                        modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TextWhite,
-                            modifier = Modifier.size(18.dp)
+                            tint = Color.White
                         )
                     }
-                }
 
-                Text(
-                    text = "Included free for all 5-Day Mind Reset participants. Access your diagnostic report, sleep blueprint, and starter toolkit.",
-                    color = Color(0xFFA7F3D0),
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
-                )
-
-                // Launch External Portal CTA
-                Button(
-                    onClick = { launchPortal() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .testTag("button_launch_portal_top"),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGold,
-                        contentColor = EmeraldDeep
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.OpenInNew,
+                            imageVector = Icons.Default.CardGiftcard,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            tint = BrandGold,
+                            modifier = Modifier.size(38.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Complimentary Welcome Kit",
+                            color = BrandGold,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Open Portal (welcomekit-pathtoinnerpeace.vercel.app)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "MindForge 360° Starter Vault • Free Download",
+                            color = Color(0xFFA7F3D0),
+                            fontSize = 11.sp
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // The 5 Assets Cards
-                assets.forEach { asset ->
-                    Card(
+                val kitItems = listOf(
+                    Triple(
+                        "S.T.O.P. Quick Pocket Card",
+                        "High-res printable pocket reference for instant overthinking interruption.",
+                        Icons.Default.CheckCircle
+                    ),
+                    Triple(
+                        "6Hz Theta Nervous Audio",
+                        "Binaural grounding frequencies to stimulate the parasympathetic nerve.",
+                        Icons.Default.Headphones
+                    ),
+                    Triple(
+                        "Interactive 5-Day Mind Reset PDF",
+                        "Daily reflection prompts, micro-action tracker, and stress audit ledger.",
+                        Icons.Default.Download
+                    )
+                )
+
+                kitItems.forEach { (title, desc, icon) ->
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 5.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = EmeraldDark),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, BorderEmeraldLight)
+                            .padding(vertical = 4.dp)
+                            .background(EmeraldMedium, RoundedCornerShape(12.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(34.dp)
-                                            .clip(CircleShape)
-                                            .background(BrandGold.copy(alpha = 0.15f))
-                                            .border(1.dp, BrandGold.copy(alpha = 0.4f), CircleShape),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = asset.icon,
-                                            contentDescription = null,
-                                            tint = BrandGold,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-
-                                    Column {
-                                        Text(
-                                            text = asset.title,
-                                            color = TextWhite,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = asset.category,
-                                            color = BrandGold,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    }
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(EmeraldDeep)
-                                        .border(1.dp, BrandGold.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = "FREE",
-                                        color = BrandGold,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = asset.summary,
-                                color = Color(0xFFD1FAE5),
-                                fontSize = 11.sp,
-                                lineHeight = 16.sp
+                        Row(verticalAlignment = Alignment.Top) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = BrandGold,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .padding(top = 2.dp)
                             )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = title,
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = desc,
+                                    color = Color(0xFFA7F3D0),
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Button(
-                    onClick = { launchPortal() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .testTag("button_launch_portal_bottom"),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandGold,
-                        contentColor = EmeraldDeep
-                    )
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://welcomekit-pathtoinnerpeace.vercel.app"))
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandGold),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(Icons.Default.OpenInBrowser, contentDescription = null, tint = EmeraldDark, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Launch Welcome Kit Web Portal ↗",
-                        fontSize = 14.sp,
+                        text = "Open Online Welcome Vault",
+                        color = EmeraldDark,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedButton(
-                    onClick = onClose,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp),
+                    onClick = onOpenChallenge,
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Close & Return to App", fontSize = 12.sp)
+                    Text("Start Day 1 in App", color = Color.White)
                 }
             }
         }
